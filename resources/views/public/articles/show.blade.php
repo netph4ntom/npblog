@@ -41,6 +41,23 @@
             </div>
         </header>
 
+        @if($article->featuredMedia)
+            <figure class="my-6">
+                <img
+                    src="{{ $article->featuredMedia->url }}"
+                    alt="{{ $article->featuredMedia->alt_text ?? $article->title }}"
+                    width="{{ $article->featuredMedia->width }}"
+                    height="{{ $article->featuredMedia->height }}"
+                    class="w-full h-auto sketch-border sketch-radius-b sketch-shadow object-cover"
+                />
+                @if($article->featuredMedia->alt_text)
+                    <figcaption class="mt-2 text-center text-sm font-ui text-text-secondary">
+                        {{ $article->featuredMedia->alt_text }}
+                    </figcaption>
+                @endif
+            </figure>
+        @endif
+
         <!-- Article Body -->
         <article class="article-body font-body text-lg leading-relaxed text-text">
             {!! $article->body_html !!}

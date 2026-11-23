@@ -84,4 +84,3 @@ test('admin can delete category with zero articles', function () {
 
     expect(Category::find($category->id))->toBeNull();
 });
-

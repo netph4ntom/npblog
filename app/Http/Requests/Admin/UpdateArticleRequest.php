@@ -28,6 +28,9 @@ class UpdateArticleRequest extends FormRequest
             'status' => ['required', 'in:draft,published'],
             'published_at' => ['nullable', 'date'],
             'is_featured' => ['nullable', 'boolean'],
+            'featured_image' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'featured_alt_text' => ['nullable', 'string', 'max:255'],
+            'remove_featured_image' => ['nullable', 'boolean'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['exists:tags,id'],
         ];

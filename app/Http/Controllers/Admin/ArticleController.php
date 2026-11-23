@@ -9,17 +9,20 @@ use App\Http\Requests\Admin\StoreArticleRequest;
 use App\Http\Requests\Admin\UpdateArticleRequest;
 use App\Models\Article;
 use App\Models\Category;
+use App\Models\Media;
 use App\Models\Redirect;
 use App\Models\Tag;
 use App\Models\User;
 use App\Services\ExcerptGenerator;
 use App\Services\MarkdownRenderer;
+use App\Services\MediaProcessor;
 use App\Services\ReadingTime;
 use App\Services\SlugGenerator;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\View\View;
 
 class ArticleController extends Controller
@@ -74,7 +77,8 @@ class ArticleController extends Controller
         SlugGenerator $slugGen,
         ReadingTime $readingTime,
         ExcerptGenerator $excerptGen,
-        MarkdownRenderer $markdown
+        MarkdownRenderer $markdown,
+        MediaProcessor $mediaProcessor
     ): RedirectResponse {
         $validated = $request->validated();
 
@@ -98,9 +102,20 @@ class ArticleController extends Controller
         /** @var User $user */
         $user = $request->user();
 
+        $featuredMediaId = null;
+        if ($request->hasFile('featured_image')) {
+            /** @var UploadedFile $featuredFile */
+            $featuredFile = $request->file('featured_image');
+            $altText = $request->input('featured_alt_text');
+            $altText = is_string($altText) ? $altText : null;
+            $media = $mediaProcessor->process($featuredFile, $user, $altText);
+            $featuredMediaId = $media->id;
+        }
+
         $article = Article::create([
             'user_id' => $user->id,
             'category_id' => $validated['category_id'] ?? null,
+            'featured_media_id' => $featuredMediaId,
             'title' => (string) $validated['title'],
             'slug' => $slug,
             'excerpt' => $excerpt,
@@ -125,7 +140,7 @@ class ArticleController extends Controller
      */
     public function edit(Article $article): View
     {
-        $article->load(['category', 'tags']);
+        $article->load(['category', 'tags', 'featuredMedia']);
         $categories = Category::orderBy('name')->get();
         $tags = Tag::orderBy('name')->get();
 
@@ -141,7 +156,8 @@ class ArticleController extends Controller
         SlugGenerator $slugGen,
         ReadingTime $readingTime,
         ExcerptGenerator $excerptGen,
-        MarkdownRenderer $markdown
+        MarkdownRenderer $markdown,
+        MediaProcessor $mediaProcessor
     ): RedirectResponse {
         $validated = $request->validated();
 
@@ -171,8 +187,33 @@ class ArticleController extends Controller
                 : ($article->published_at ?? now());
         }
 
+        /** @var User $user */
+        $user = $request->user();
+
+        $featuredMediaId = $article->featured_media_id;
+        $oldMediaToClean = null;
+
+        if ($request->boolean('remove_featured_image')) {
+            $oldMediaToClean = $featuredMediaId;
+            $featuredMediaId = null;
+        } elseif ($request->hasFile('featured_image')) {
+            $oldMediaToClean = $featuredMediaId;
+            /** @var UploadedFile $featuredFile */
+            $featuredFile = $request->file('featured_image');
+            $altText = $request->input('featured_alt_text');
+            $altText = is_string($altText) ? $altText : null;
+            $media = $mediaProcessor->process($featuredFile, $user, $altText);
+            $featuredMediaId = $media->id;
+        } elseif ($article->featuredMedia && $request->has('featured_alt_text')) {
+            $altText = $request->input('featured_alt_text');
+            $article->featuredMedia->update([
+                'alt_text' => is_string($altText) ? $altText : null,
+            ]);
+        }
+
         $article->update([
             'category_id' => $validated['category_id'] ?? null,
+            'featured_media_id' => $featuredMediaId,
             'title' => (string) $validated['title'],
             'slug' => $newSlug,
             'excerpt' => $excerpt,
@@ -184,6 +225,13 @@ class ArticleController extends Controller
             'word_count' => $metrics['word_count'],
             'reading_time' => $metrics['reading_time'],
         ]);
+
+        if ($oldMediaToClean !== null) {
+            $oldMedia = Media::find($oldMediaToClean);
+            if ($oldMedia && $oldMedia->articles()->count() === 0) {
+                $oldMedia->delete();
+            }
+        }
 
         $tags = isset($validated['tags']) && is_array($validated['tags']) ? $validated['tags'] : [];
         $article->tags()->sync($tags);

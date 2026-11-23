@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Public\AboutController;
 use App\Http\Controllers\Public\ArticleController;
@@ -31,6 +32,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::post('/articles/preview', [AdminArticleController::class, 'preview'])->name('articles.preview');
     Route::resource('articles', AdminArticleController::class);
     Route::resource('categories', AdminCategoryController::class)->except(['show']);
+    Route::resource('media', AdminMediaController::class)
+        ->parameters(['media' => 'media'])
+        ->except(['create', 'show', 'edit']);
 });
 
 Route::middleware('auth')->group(function () {

@@ -61,7 +61,7 @@
             </a>
         </div>
 
-        <form action="{{ route('admin.articles.store') }}" method="POST" class="space-y-6">
+        <form action="{{ route('admin.articles.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -336,6 +336,42 @@
                             >
                                 Batal
                             </a>
+                        </div>
+                    </x-sketch-box>
+
+                    <!-- Featured Image -->
+                    <x-sketch-box variant="c" class="p-5 bg-surface space-y-3">
+                        <div class="flex items-center justify-between pb-2 border-b border-border">
+                            <h2 class="font-heading text-xl font-bold text-ink">Gambar Utama</h2>
+                            <span class="font-ui text-xs text-text-secondary">Featured</span>
+                        </div>
+
+                        <div>
+                            <x-input-label for="featured_image" value="Pilih File Gambar" />
+                            <input
+                                type="file"
+                                id="featured_image"
+                                name="featured_image"
+                                accept="image/jpeg,image/png,image/webp"
+                                class="w-full text-xs font-ui text-text file:mr-3 file:py-2 file:px-3 file:rounded file:border-2 file:border-ink file:text-xs file:font-bold file:bg-bg file:cursor-pointer"
+                            />
+                            <p class="font-ui text-xs text-text-secondary mt-1">
+                                JPEG, PNG, WebP maks 5 MB. Otomatis dikonversi ke WebP dan di-resize maks 1600px.
+                            </p>
+                            <x-input-error :messages="$errors->get('featured_image')" class="mt-1" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="featured_alt_text" value="Alt Text Gambar" />
+                            <x-text-input
+                                id="featured_alt_text"
+                                name="featured_alt_text"
+                                type="text"
+                                class="w-full text-sm"
+                                placeholder="Deskripsi gambar untuk aksesibilitas..."
+                                value="{{ old('featured_alt_text') }}"
+                            />
+                            <x-input-error :messages="$errors->get('featured_alt_text')" class="mt-1" />
                         </div>
                     </x-sketch-box>
 

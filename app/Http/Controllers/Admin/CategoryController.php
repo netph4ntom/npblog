@@ -91,4 +91,3 @@ class CategoryController extends Controller
         return redirect()->route('admin.categories.index')->with('success', "Kategori '{$category->name}' berhasil dihapus.");
     }
 }
-

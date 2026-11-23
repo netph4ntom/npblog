@@ -77,4 +77,65 @@ class Media extends Model
             get: fn (): string => Storage::disk($this->disk)->url($this->path)
         );
     }
+
+    /**
+     * Get the URL for a thumbnail of the media.
+     */
+    public function getThumbnailUrl(int $size = 400): string
+    {
+        $dirname = dirname($this->path);
+        $filename = pathinfo($this->path, PATHINFO_FILENAME);
+        $thumbDir = ($dirname === '.' ? '' : $dirname.'/').'thumbnails/';
+        $thumbPath = "{$thumbDir}{$filename}-{$size}.webp";
+
+        if (Storage::disk($this->disk)->exists($thumbPath)) {
+            return Storage::disk($this->disk)->url($thumbPath);
+        }
+
+        return $this->url;
+    }
+
+    /**
+     * Accessor for default 400px thumbnail.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function thumbnailUrl(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): string => $this->getThumbnailUrl(400)
+        );
+    }
+
+    /**
+     * Delete the media file and its generated thumbnails from disk.
+     */
+    public function deleteFiles(): void
+    {
+        $storage = Storage::disk($this->disk);
+        if ($storage->exists($this->path)) {
+            $storage->delete($this->path);
+        }
+
+        $dirname = dirname($this->path);
+        $filename = pathinfo($this->path, PATHINFO_FILENAME);
+        $thumbDir = ($dirname === '.' ? '' : $dirname.'/').'thumbnails/';
+
+        foreach ([400, 800] as $size) {
+            $thumbPath = "{$thumbDir}{$filename}-{$size}.webp";
+            if ($storage->exists($thumbPath)) {
+                $storage->delete($thumbPath);
+            }
+        }
+    }
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (Media $media): void {
+            $media->deleteFiles();
+        });
+    }
 }

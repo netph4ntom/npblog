@@ -209,4 +209,3 @@ test('server-side preview endpoint renders markdown to sanitized html', function
         ->and($html)->toContain('<strong>Teks Tebal</strong>')
         ->and($html)->not->toContain('<script>');
 });
-
