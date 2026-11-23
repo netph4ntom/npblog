@@ -6,7 +6,9 @@ use App\Models\User;
 use App\Services\MarkdownRenderer;
 use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Session\TokenMismatchException;
 use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
@@ -82,19 +84,21 @@ test('public registration route is completely disabled', function () {
 |--------------------------------------------------------------------------
 */
 test('post requests without CSRF token are rejected', function () {
-    // Disable automatic CSRF token inclusion for this test
-    $this->withoutMiddleware(ValidateCsrfToken::class);
+    $middleware = new class(app(), app('encrypter')) extends ValidateCsrfToken
+    {
+        protected function runningUnitTests(): bool
+        {
+            return false;
+        }
+    };
 
-    // Verify when middleware is present, requests require CSRF
-    // By testing with a fresh kernel without bypass:
-    $response = $this->actingAs($this->admin)
-        ->withServerVariables(['HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest'])
-        ->post('/admin/categories', [
-            'name' => 'Kategori CSRF',
-        ]);
+    $request = Request::create('/admin/categories', 'POST', [
+        'name' => 'Kategori CSRF',
+    ]);
+    $request->setLaravelSession(app('session.store'));
 
-    // Expect status 302 or success when token bypassed, demonstrating middleware importance
-    expect($response->status())->toBeIn([200, 302]);
+    expect(fn () => $middleware->handle($request, fn () => response('ok')))
+        ->toThrow(TokenMismatchException::class);
 });
 
 /*
