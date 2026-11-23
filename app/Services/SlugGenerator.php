@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Article;
+use App\Models\Redirect;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
@@ -85,6 +86,15 @@ class SlugGenerator
 
         $existingSlugs = $existing->all();
 
+        if ($modelClass === Article::class) {
+            /** @var Collection<int, string> $redirectSlugs */
+            $redirectSlugs = Redirect::query()
+                ->where('from_slug', 'LIKE', "{$baseSlug}%")
+                ->pluck('from_slug');
+
+            $existingSlugs = array_merge($existingSlugs, $redirectSlugs->all());
+        }
+
         $suffix = 2;
         while (
             in_array("{$baseSlug}-{$suffix}", $existingSlugs, true)
@@ -122,6 +132,14 @@ class SlugGenerator
             $query->whereKeyNot($ignoreId);
         }
 
-        return $query->exists();
+        if ($query->exists()) {
+            return true;
+        }
+
+        if ($modelClass === Article::class) {
+            return Redirect::query()->where('from_slug', $slug)->exists();
+        }
+
+        return false;
     }
 }

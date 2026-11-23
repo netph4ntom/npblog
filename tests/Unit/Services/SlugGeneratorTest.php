@@ -2,6 +2,7 @@
 
 use App\Models\Article;
 use App\Models\Category;
+use App\Models\Redirect;
 use App\Models\User;
 use App\Services\SlugGenerator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -104,4 +105,21 @@ test('works for different models like Category', function () {
     $newSlug = $this->generator->generate('Teknologi', modelClass: Category::class);
 
     expect($newSlug)->toBe('teknologi-2');
+});
+
+test('checks redirects table to prevent collision with redirected slugs', function () {
+    $article = Article::factory()->create([
+        'user_id' => $this->user->id,
+        'category_id' => $this->category->id,
+        'slug' => 'panduan-docker-baru',
+    ]);
+
+    Redirect::create([
+        'from_slug' => 'panduan-docker',
+        'article_id' => $article->id,
+    ]);
+
+    $newSlug = $this->generator->generate('Panduan Docker');
+
+    expect($newSlug)->toBe('panduan-docker-2');
 });
