@@ -33,9 +33,9 @@
         </div>
 
         <div class="flex items-center justify-end mt-4">
-            <x-primary-button class="ms-3">
+            <x-button variant="primary" type="submit" class="ms-3">
                 {{ __('Log in') }}
-            </x-primary-button>
+            </x-button>
         </div>
     </form>
 </x-guest-layout>
