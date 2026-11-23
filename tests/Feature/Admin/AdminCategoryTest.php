@@ -84,3 +84,19 @@ test('admin can delete category with zero articles', function () {
 
     expect(Category::find($category->id))->toBeNull();
 });
+
+test('admin cannot delete category in use by soft-deleted articles in trash', function () {
+    $category = Category::factory()->create(['name' => 'Kategori Artikel Sampah']);
+    $article = Article::factory()->create([
+        'user_id' => $this->admin->id,
+        'category_id' => $category->id,
+    ]);
+    $article->delete(); // soft deleted
+
+    $response = $this->actingAs($this->admin)->delete("/admin/categories/{$category->id}");
+
+    $response->assertRedirect()
+        ->assertSessionHas('error');
+
+    expect(Category::find($category->id))->not->toBeNull();
+});

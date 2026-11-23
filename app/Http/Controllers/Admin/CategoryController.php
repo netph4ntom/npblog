@@ -80,7 +80,7 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category): RedirectResponse
     {
-        $articlesCount = $category->articles()->count();
+        $articlesCount = $category->articles()->withTrashed()->count();
 
         if ($articlesCount > 0) {
             return redirect()->back()->with('error', "Kategori '{$category->name}' tidak dapat dihapus karena masih digunakan oleh {$articlesCount} artikel. Pindahkan artikel ke kategori lain terlebih dahulu.");
