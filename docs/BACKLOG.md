@@ -34,9 +34,9 @@ Kerjakan berurutan. Centang `[x]` setelah `make check` hijau. Tulis catatan sing
 - [x] Responsif 360–1920px; Lighthouse mobile ≥ 90 untuk Home dan Article
 
 ## T06 — Autentikasi admin
-- [ ] `/login` dengan rate limiting dan pesan generik; session diregenerasi; logout
-- [ ] `php artisan npblog:create-admin` dan `npblog:reset-password`
-- [ ] `/admin/*` guest diarahkan ke login; tidak ada `/register`; halaman admin dan login `noindex`
+- [x] `/login` dengan rate limiting dan pesan generik; session diregenerasi; logout
+- [x] `php artisan npblog:create-admin` dan `npblog:reset-password`
+- [x] `/admin/*` guest diarahkan ke login; tidak ada `/register`; halaman admin dan login `noindex`
 
 ## T07 — Admin artikel dan kategori
 - [ ] Overview: 4 stat, Recent Publications, Continue Writing
@@ -77,3 +77,4 @@ Kerjakan berurutan. Centang `[x]` setelah `make check` hijau. Tulis catatan sing
 - T03: Skema data layer dibuat lengkap dengan migration, model, factory, dan seeder. Relasi Eloquent didefinisikan untuk semua entitas (User, Category, Tag, Media, Article, Setting, Redirect). Scope `Article::published()` menyaring `status = 'published'` dan `published_at <= now()`. Index FULLTEXT dibuat pada MySQL untuk pencarian artikel. Seeder demo mengisi 1 admin, 4 kategori, 8 tag, dan 12 artikel realistis.
 - T04: Core services diimplementasikan dengan unit test lengkap: SlugGenerator menangani bentrok slug dengan akhiran numerik `-2`, memeriksa data soft-deleted, dan memfilter reserved route slugs. ReadingTime menghitung kata berbasis token Unicode setelah membersihkan markup dengan rumus `ceil(words / 200)` dan minimum 1 menit. ExcerptGenerator membatasi ringkasan eksplisit maksimal 300 karakter serta menyediakan fallback otomatis dari paragraf pertama (~160 karakter). MarkdownRenderer mengintegrasikan CommonMark + GFM (tabel, task list, strikethrough), HeadingPermalinkExtension untuk anchor heading ber-`id`, HighlightedCodeRenderer (berbasis scrivo/highlight.php) untuk syntax highlighting dengan kelas `hljs`, serta sanitasi allowlist aman via symfony/html-sanitizer.
 - T05: Halaman publik dibangun lengkap dengan pemisahan controller di `Http/Controllers/Public/` (HomeController, ArticleController, AboutController, SearchController). Seluruh query publik menggunakan scope `Article::published()`. Rute artikel detail mendukung redirect 301 untuk slug lama dari tabel redirects jika artikel terbit, serta mengembalikan 404 jika artikel masih draft atau terjadwal. Pencarian artikel dioptimalkan dengan scope `Article::scopeSearch()` yang menggunakan MySQL FULLTEXT di lingkungan produksi dan fallback LIKE di pengujian SQLite/transaksi uncommitted. Halaman error 404 dan 500 dibuat bertema hand-drawn dengan sketch box dan tombol aksi. Blok kode dilengkapi wrapper hand-drawn, label bahasa, dan tombol Copy bertenaga Clipboard API.
+- T06: Autentikasi admin diperkuat sesuai aturan keamanan AGENTS.md. Rute login menerapkan rate limiting (5 percobaan, throttle) dan pesan error generik yang identik untuk email yang tidak ada maupun password salah untuk mencegah enumerasi pengguna. Session diregenerasi saat login sukses. Perintah Artisan `npblog:create-admin` dan `npblog:reset-password` dibuat untuk manajemen akun administrator privat tanpa rute registrasi publik. Seluruh rute `/admin` dan `/admin/*` dilindungi middleware auth, dan meta tag `<meta name="robots" content="noindex, nofollow">` dipasang pada layout admin dan guest (login).
