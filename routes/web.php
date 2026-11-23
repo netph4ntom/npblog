@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MediaController as AdminMediaController;
+use App\Http\Controllers\Admin\SettingController as AdminSettingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Public\AboutController;
 use App\Http\Controllers\Public\ArticleController;
@@ -35,6 +36,9 @@ Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
     Route::resource('media', AdminMediaController::class)
         ->parameters(['media' => 'media'])
         ->except(['create', 'show', 'edit']);
+    Route::get('settings', [AdminSettingController::class, 'edit'])->name('settings.edit');
+    Route::put('settings', [AdminSettingController::class, 'update'])->name('settings.update');
+    Route::get('profile', [ProfileController::class, 'edit'])->name('profile');
 });
 
 Route::middleware('auth')->group(function () {

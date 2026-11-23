@@ -1,29 +1,24 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Profile') }}
-        </h2>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-profile-information-form')
-                </div>
-            </div>
-
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-password-form')
-                </div>
-            </div>
-
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
-            </div>
+<x-admin-layout header="Profile">
+    <div class="max-w-4xl mx-auto space-y-8">
+        <!-- Header -->
+        <div class="pb-4 border-b border-border">
+            <h1 class="font-heading text-4xl font-bold text-ink">Profil Pengguna</h1>
+            <p class="font-ui text-base text-text-secondary">Perbarui identitas akun administrator dan kata sandi Anda.</p>
         </div>
+
+        <!-- 1. Profile Information Form -->
+        <x-sketch-box variant="a" class="p-6 bg-surface">
+            @include('profile.partials.update-profile-information-form')
+        </x-sketch-box>
+
+        <!-- 2. Update Password Form -->
+        <x-sketch-box variant="b" class="p-6 bg-surface">
+            @include('profile.partials.update-password-form')
+        </x-sketch-box>
+
+        <!-- 3. Delete Account Form (Protected) -->
+        <x-sketch-box variant="c" class="p-6 bg-surface">
+            @include('profile.partials.delete-user-form')
+        </x-sketch-box>
     </div>
-</x-app-layout>
+</x-admin-layout>
