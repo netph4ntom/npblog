@@ -97,7 +97,15 @@
     <x-skip-link target="#main-content" />
 
     <!-- Public Header -->
-    <header class="w-full border-b border-border bg-surface/80 backdrop-blur-xs sticky top-0 z-40">
+    <header
+        x-data="{ isScrolled: false }"
+        x-init="isScrolled = window.scrollY > 20"
+        @scroll.window.passive="isScrolled = window.scrollY > 20"
+        class="w-full sticky top-0 z-40 transition-all duration-300"
+        :class="isScrolled
+            ? 'bg-bg/95 backdrop-blur-md border-b border-border'
+            : 'bg-transparent border-b border-transparent'"
+    >
         <div class="max-w-container mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <!-- Brand Logo -->
             <a href="{{ url('/') }}" class="group flex items-center space-x-2 text-decoration-none focus-visible:outline-none">

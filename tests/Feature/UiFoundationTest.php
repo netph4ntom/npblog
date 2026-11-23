@@ -61,3 +61,12 @@ test('application timezone is Asia/Jakarta and default locale is id', function (
     $date = Carbon::parse('2026-08-17 10:00:00');
     expect($date->translatedFormat('d F Y'))->toBe('17 Agustus 2026');
 });
+
+test('public header is transparent at top and dynamically adapts on scroll', function () {
+    $response = $this->get('/');
+
+    $response->assertOk()
+        ->assertSee('isScrolled', false)
+        ->assertSee('bg-transparent', false)
+        ->assertSee('bg-bg/95', false);
+});
