@@ -1,0 +1,7 @@
+.env
+.env.*.local
+backups/
+node_modules/
+vendor/
+public/build/
+storage/*.key
