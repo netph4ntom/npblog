@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Carbon\Carbon;
 
 test('public layout renders home with theme toggle and skip link', function () {
     $response = $this->get('/');
@@ -51,4 +52,12 @@ test('sketch components render with proper hand drawn attributes', function () {
 
     $viewBadge = $this->blade('<x-badge type="draft">Draft</x-badge>');
     expect((string) $viewBadge)->toContain('bg-warning-bg', 'text-warning-text');
+});
+
+test('application timezone is Asia/Jakarta and default locale is id', function () {
+    expect(config('app.timezone'))->toBe('Asia/Jakarta')
+        ->and(config('app.locale'))->toBe('id');
+
+    $date = Carbon::parse('2026-08-17 10:00:00');
+    expect($date->translatedFormat('d F Y'))->toBe('17 Agustus 2026');
 });
