@@ -79,6 +79,7 @@ class ArticleController extends Controller
         }
 
         $related = Article::published()
+            ->with(['category', 'featuredMedia', 'tags'])
             ->where('id', '!=', $article->id)
             ->when($article->category_id !== null, function ($q) use ($article) {
                 $q->where('category_id', $article->category_id);

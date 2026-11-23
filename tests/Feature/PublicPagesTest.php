@@ -290,3 +290,49 @@ test('themed 500 page renders hand-drawn error elements', function () {
     expect($view)->toContain('500')
         ->and($view)->toContain('Terjadi Kesalahan Server');
 });
+
+test('article detail eager loads category and media for related articles', function () {
+    $mainArticle = Article::factory()->create([
+        'user_id' => $this->user->id,
+        'category_id' => $this->techCategory->id,
+        'title' => 'Main Article',
+        'slug' => 'main-article',
+        'status' => 'published',
+        'published_at' => now()->subDay(),
+    ]);
+
+    Article::factory()->count(2)->create([
+        'user_id' => $this->user->id,
+        'category_id' => $this->techCategory->id,
+        'status' => 'published',
+        'published_at' => now()->subDay(),
+    ]);
+
+    $response = $this->get('/articles/main-article');
+    $response->assertOk();
+
+    $related = $response->viewData('related');
+    expect($related)->not->toBeEmpty();
+    foreach ($related as $rel) {
+        expect($rel->relationLoaded('category'))->toBeTrue()
+            ->and($rel->relationLoaded('featuredMedia'))->toBeTrue();
+    }
+});
+
+test('home page eager loads user relationship on featured and latest articles', function () {
+    Article::factory()->create([
+        'user_id' => $this->user->id,
+        'category_id' => $this->techCategory->id,
+        'title' => 'Featured Post',
+        'is_featured' => true,
+        'status' => 'published',
+        'published_at' => now()->subDay(),
+    ]);
+
+    $response = $this->get('/');
+    $response->assertOk();
+
+    $featured = $response->viewData('featured');
+    expect($featured)->not->toBeNull()
+        ->and($featured->relationLoaded('user'))->toBeTrue();
+});

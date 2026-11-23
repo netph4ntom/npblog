@@ -17,13 +17,13 @@ class HomeController extends Controller
     public function __invoke(): View
     {
         $featured = Article::published()
-            ->with(['category', 'tags', 'featuredMedia'])
+            ->with(['category', 'tags', 'featuredMedia', 'user'])
             ->featured()
             ->latest('published_at')
             ->first();
 
         $latestQuery = Article::published()
-            ->with(['category', 'tags', 'featuredMedia']);
+            ->with(['category', 'tags', 'featuredMedia', 'user']);
 
         if ($featured !== null) {
             $latestQuery->where('id', '!=', $featured->id);
