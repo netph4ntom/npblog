@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Article;
 use App\Models\Media;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -95,4 +96,23 @@ test('media upload rejects dangerous files with validation error', function () {
     ]);
 
     $response->assertSessionHasErrors(['image']);
+});
+
+test('admin cannot delete media in use by articles as featured image', function () {
+    $media = Media::factory()->create([
+        'user_id' => $this->admin->id,
+        'alt_text' => 'Featured Media Terpakai',
+    ]);
+
+    Article::factory()->create([
+        'user_id' => $this->admin->id,
+        'featured_media_id' => $media->id,
+    ]);
+
+    $response = $this->actingAs($this->admin)->delete("/admin/media/{$media->id}");
+
+    $response->assertRedirect()
+        ->assertSessionHas('error');
+
+    expect(Media::find($media->id))->not->toBeNull();
 });

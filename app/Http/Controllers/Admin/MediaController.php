@@ -102,6 +102,12 @@ class MediaController extends Controller
      */
     public function destroy(Media $media): RedirectResponse
     {
+        $articlesCount = $media->articles()->count();
+
+        if ($articlesCount > 0) {
+            return redirect()->back()->with('error', "Media tidak dapat dihapus karena masih digunakan sebagai gambar utama oleh {$articlesCount} artikel.");
+        }
+
         $media->delete();
 
         return redirect()->route('admin.media.index')->with('success', 'Media dan file terkait berhasil dihapus.');
