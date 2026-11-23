@@ -15,10 +15,5 @@
         <x-sketch-box variant="b" class="p-6 bg-surface">
             @include('profile.partials.update-password-form')
         </x-sketch-box>
-
-        <!-- 3. Delete Account Form (Protected) -->
-        <x-sketch-box variant="c" class="p-6 bg-surface">
-            @include('profile.partials.delete-user-form')
-        </x-sketch-box>
     </div>
 </x-admin-layout>

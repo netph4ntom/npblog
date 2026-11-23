@@ -68,3 +68,11 @@ test('admin password change requires correct current password', function () {
     $this->admin->refresh();
     expect(Hash::check('password-baru-123', $this->admin->password))->toBeTrue();
 });
+
+test('admin user account cannot be deleted via profile route', function () {
+    $this->actingAs($this->admin)->delete('/profile', [
+        'password' => 'secret-lama',
+    ])->assertMethodNotAllowed();
+
+    expect($this->admin->fresh())->not->toBeNull();
+});
