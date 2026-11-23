@@ -237,3 +237,37 @@ test('login endpoint enforces rate limiting after 5 failed attempts', function (
     $response = $this->post('/login', $credentials);
     $response->assertSessionHasErrors(['email']);
 });
+
+test('session cookie secure flag defaults to true in production environment', function () {
+    $sessionConfig = require config_path('session.php');
+    expect($sessionConfig['http_only'])->toBeTrue();
+
+    $origSecureServer = $_SERVER['SESSION_SECURE_COOKIE'] ?? null;
+    $origSecureEnv = $_ENV['SESSION_SECURE_COOKIE'] ?? null;
+    $origAppEnvServer = $_SERVER['APP_ENV'] ?? null;
+    $origAppEnvEnv = $_ENV['APP_ENV'] ?? null;
+
+    unset($_SERVER['SESSION_SECURE_COOKIE'], $_ENV['SESSION_SECURE_COOKIE']);
+    putenv('SESSION_SECURE_COOKIE');
+    $_SERVER['APP_ENV'] = 'production';
+    $_ENV['APP_ENV'] = 'production';
+    putenv('APP_ENV=production');
+
+    $prodSessionConfig = require config_path('session.php');
+    expect($prodSessionConfig['secure'])->toBeTrue();
+
+    if ($origSecureServer !== null) {
+        $_SERVER['SESSION_SECURE_COOKIE'] = $origSecureServer;
+    }
+    if ($origSecureEnv !== null) {
+        $_ENV['SESSION_SECURE_COOKIE'] = $origSecureEnv;
+        putenv("SESSION_SECURE_COOKIE={$origSecureEnv}");
+    }
+    if ($origAppEnvServer !== null) {
+        $_SERVER['APP_ENV'] = $origAppEnvServer;
+    }
+    if ($origAppEnvEnv !== null) {
+        $_ENV['APP_ENV'] = $origAppEnvEnv;
+        putenv("APP_ENV={$origAppEnvEnv}");
+    }
+});
