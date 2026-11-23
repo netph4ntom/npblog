@@ -4,11 +4,16 @@ namespace Database\Seeders;
 
 use App\Models\Article;
 use App\Models\Category;
+use App\Models\Media;
 use App\Models\Setting;
 use App\Models\Tag;
 use App\Models\User;
+use App\Services\ExcerptGenerator;
+use App\Services\MarkdownRenderer;
+use App\Services\ReadingTime;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
@@ -31,10 +36,20 @@ class DatabaseSeeder extends Seeder
         // 2. Default Settings
         $settings = [
             'blog_name' => 'NPblog',
+            'blog_tagline' => 'Catatan Kode & Arsitektur Minimalis',
             'blog_description' => 'Blog personal minimalis bergaya hand-drawn oleh Dapit.',
-            'owner_name' => 'Dapit',
-            'owner_bio' => 'Software engineer, penggiat keamanan siber, dan penikmat kesederhanaan sistem.',
+            'author_name' => 'Dapit',
+            'author_bio' => 'Software engineer yang menyukai kesederhanaan sistem dan desain hand-drawn.',
+            'about_content' => "## Tentang Dapit & NPblog\n\nSelamat datang di **NPblog**. Ini adalah blog personal dan jurnal teknis yang saya bangun dari nol dengan pendekatan minimalis bergaya *hand-drawn*.\n\n### Fokus Tulisan\n- **Arsitektur Perangkat Lunak**: Menjaga sistem tetap sederhana, mudah dipelihara, dan tangguh.\n- **Keamanan Siber**: Praktik terbaik pengamanan server, isolasi container, dan audit aplikasi web.\n- **Infrastruktur Mandiri**: Homelab, automasi Linux, dan containerisasi rootless.\n- **Refleksi Personal**: Pemikiran seputar proses berkarya dan produktivitas di era digital.",
+            'contact_email' => 'dapit@npblog.local',
+            'social_links' => [
+                'github' => 'https://github.com/dapit',
+                'twitter' => 'https://x.com/dapit',
+                'linkedin' => 'https://linkedin.com/in/dapit',
+            ],
             'posts_per_page' => 9,
+            'seo_default_title' => 'NPblog — Catatan Dapit',
+            'seo_default_description' => 'Blog personal minimalis bergaya hand-drawn oleh Dapit.',
         ];
 
         foreach ($settings as $key => $val) {
@@ -83,7 +98,91 @@ class DatabaseSeeder extends Seeder
             );
         }
 
-        // 5. 12 Articles (3 per category)
+        // 5. Media Dummy for Featured Article
+        $featuredMedia = null;
+        if (function_exists('imagecreatetruecolor')) {
+            $img = imagecreatetruecolor(1200, 630);
+            if ($img !== false) {
+                $bg = imagecolorallocate($img, 253, 251, 247);
+                if ($bg !== false) {
+                    imagefill($img, 0, 0, $bg);
+                }
+                $ink = imagecolorallocate($img, 26, 26, 26);
+                if ($ink !== false) {
+                    imagesetthickness($img, 4);
+                    imagerectangle($img, 24, 24, 1176, 606, $ink);
+                }
+                ob_start();
+                imagewebp($img, null, 85);
+                $webpData = (string) ob_get_clean();
+                imagedestroy($img);
+
+                $hash = Str::random(40);
+                $path = "media/{$hash}.webp";
+                Storage::disk('public')->put($path, $webpData);
+
+                // Create 800 & 400 thumbnails
+                $thumb800 = imagecreatetruecolor(800, 420);
+                if ($thumb800 !== false) {
+                    $bg800 = imagecolorallocate($thumb800, 253, 251, 247);
+                    if ($bg800 !== false) {
+                        imagefill($thumb800, 0, 0, $bg800);
+                    }
+                    $ink800 = imagecolorallocate($thumb800, 26, 26, 26);
+                    if ($ink800 !== false) {
+                        imagesetthickness($thumb800, 3);
+                        imagerectangle($thumb800, 16, 16, 784, 404, $ink800);
+                    }
+                    ob_start();
+                    imagewebp($thumb800, null, 80);
+                    $thumb800Data = (string) ob_get_clean();
+                    imagedestroy($thumb800);
+                    Storage::disk('public')->put("media/{$hash}-800.webp", $thumb800Data);
+                }
+
+                $thumb400 = imagecreatetruecolor(400, 210);
+                if ($thumb400 !== false) {
+                    $bg400 = imagecolorallocate($thumb400, 253, 251, 247);
+                    if ($bg400 !== false) {
+                        imagefill($thumb400, 0, 0, $bg400);
+                    }
+                    $ink400 = imagecolorallocate($thumb400, 26, 26, 26);
+                    if ($ink400 !== false) {
+                        imagesetthickness($thumb400, 2);
+                        imagerectangle($thumb400, 8, 8, 392, 202, $ink400);
+                    }
+                    ob_start();
+                    imagewebp($thumb400, null, 75);
+                    $thumb400Data = (string) ob_get_clean();
+                    imagedestroy($thumb400);
+                    Storage::disk('public')->put("media/{$hash}-400.webp", $thumb400Data);
+                }
+
+                $featuredMedia = Media::query()->firstOrCreate(
+                    ['original_name' => 'minimalist-handdrawn-architecture.webp'],
+                    [
+                        'user_id' => $admin->id,
+                        'disk' => 'public',
+                        'path' => $path,
+                        'mime' => 'image/webp',
+                        'size' => strlen($webpData),
+                        'width' => 1200,
+                        'height' => 630,
+                        'alt_text' => 'Ilustrasi sketsa arsitektur perangkat lunak minimalis',
+                    ]
+                );
+            }
+        }
+
+        // 6. Services for realistic rendering
+        /** @var MarkdownRenderer $renderer */
+        $renderer = app(MarkdownRenderer::class);
+        /** @var ExcerptGenerator $excerptGenerator */
+        $excerptGenerator = app(ExcerptGenerator::class);
+        /** @var ReadingTime $readingTimeService */
+        $readingTimeService = app(ReadingTime::class);
+
+        // 7. 12 Articles (3 per category)
         $articlesData = [
             // Technology
             [
@@ -94,6 +193,7 @@ class DatabaseSeeder extends Seeder
                 'status' => 'published',
                 'published_at' => now()->subDays(12),
                 'tags' => ['web', 'php', 'notes'],
+                'with_media' => true,
             ],
             [
                 'category' => 'technology',
@@ -103,6 +203,7 @@ class DatabaseSeeder extends Seeder
                 'status' => 'published',
                 'published_at' => now()->subDays(9),
                 'tags' => ['php', 'laravel'],
+                'with_media' => false,
             ],
             [
                 'category' => 'technology',
@@ -112,6 +213,7 @@ class DatabaseSeeder extends Seeder
                 'status' => 'published',
                 'published_at' => now()->subDays(2),
                 'tags' => ['web', 'notes'],
+                'with_media' => false,
             ],
 
             // Cybersecurity
@@ -123,6 +225,7 @@ class DatabaseSeeder extends Seeder
                 'status' => 'published',
                 'published_at' => now()->subDays(14),
                 'tags' => ['security', 'linux', 'devops'],
+                'with_media' => false,
             ],
             [
                 'category' => 'cybersecurity',
@@ -132,6 +235,7 @@ class DatabaseSeeder extends Seeder
                 'status' => 'published',
                 'published_at' => now()->subDays(8),
                 'tags' => ['security', 'web'],
+                'with_media' => false,
             ],
             [
                 'category' => 'cybersecurity',
@@ -141,6 +245,7 @@ class DatabaseSeeder extends Seeder
                 'status' => 'published',
                 'published_at' => now()->subDays(3),
                 'tags' => ['security', 'web'],
+                'with_media' => false,
             ],
 
             // Infrastructure
@@ -152,6 +257,7 @@ class DatabaseSeeder extends Seeder
                 'status' => 'published',
                 'published_at' => now()->subDays(10),
                 'tags' => ['docker', 'linux', 'devops'],
+                'with_media' => false,
             ],
             [
                 'category' => 'infrastructure',
@@ -161,6 +267,7 @@ class DatabaseSeeder extends Seeder
                 'status' => 'published',
                 'published_at' => now()->subDays(5),
                 'tags' => ['devops', 'linux'],
+                'with_media' => false,
             ],
             [
                 'category' => 'infrastructure',
@@ -170,6 +277,7 @@ class DatabaseSeeder extends Seeder
                 'status' => 'published',
                 'published_at' => now()->addDays(2), // Scheduled future article!
                 'tags' => ['devops', 'linux', 'web'],
+                'with_media' => false,
             ],
 
             // Personal
@@ -181,6 +289,7 @@ class DatabaseSeeder extends Seeder
                 'status' => 'published',
                 'published_at' => now()->subDays(15),
                 'tags' => ['notes'],
+                'with_media' => false,
             ],
             [
                 'category' => 'personal',
@@ -190,6 +299,7 @@ class DatabaseSeeder extends Seeder
                 'status' => 'published',
                 'published_at' => now()->subDays(1),
                 'tags' => ['notes'],
+                'with_media' => false,
             ],
             [
                 'category' => 'personal',
@@ -199,6 +309,7 @@ class DatabaseSeeder extends Seeder
                 'status' => 'draft',
                 'published_at' => null, // Draft article!
                 'tags' => ['notes', 'linux'],
+                'with_media' => false,
             ],
         ];
 
@@ -207,18 +318,19 @@ class DatabaseSeeder extends Seeder
             $title = $art['title'];
             $slug = Str::slug($title);
             $body = $art['body'];
-            $wordCount = str_word_count($body);
-            $readingTime = max(1, (int) ceil($wordCount / 200));
 
-            // Generate simple sanitized body_html for now
-            $bodyHtml = '<p>'.str_replace("\n\n", '</p><p>', e($body)).'</p>';
-            $excerpt = Str::limit(strip_tags($body), 160);
+            $bodyHtml = $renderer->render($body);
+            $excerpt = $excerptGenerator->generate(null, $body);
+            $stats = $readingTimeService->analyze($body);
+            $wordCount = $stats['word_count'];
+            $readingTime = $stats['reading_time'];
 
             $article = Article::query()->firstOrCreate(
                 ['slug' => $slug],
                 [
                     'user_id' => $admin->id,
                     'category_id' => $cat->id,
+                    'featured_media_id' => ! empty($art['with_media']) ? $featuredMedia?->id : null,
                     'title' => $title,
                     'excerpt' => $excerpt,
                     'body' => $body,
