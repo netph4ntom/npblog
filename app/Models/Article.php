@@ -104,7 +104,7 @@ class Article extends Model
         $connection = $query->getConnection();
         $isMysql = $connection->getDriverName() === 'mysql';
 
-        if ($isMysql && ! app()->environment('testing')) {
+        if ($isMysql && ! app()->environment('testing') && mb_strlen($term) >= 3) {
             return $query->whereFullText(['title', 'excerpt', 'body'], $term);
         }
 

@@ -259,6 +259,21 @@ test('search page contains noindex robots tag and handles queries', function () 
         ->assertSee('Pencarian Khusus Arsitektur');
 });
 
+test('search page handles short queries under 3 characters', function () {
+    Article::factory()->create([
+        'user_id' => $this->user->id,
+        'title' => 'Belajar Bahasa Go Pemula',
+        'slug' => 'belajar-bahasa-go-pemula',
+        'status' => 'published',
+        'published_at' => now()->subDay(),
+    ]);
+
+    $response = $this->get('/search?q=Go');
+
+    $response->assertOk()
+        ->assertSee('Belajar Bahasa Go Pemula');
+});
+
 test('themed 404 page renders hand-drawn error elements', function () {
     $response = $this->get('/halaman-yang-pasti-tidak-ada-404');
 
