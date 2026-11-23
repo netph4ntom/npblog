@@ -17,9 +17,9 @@ Kerjakan berurutan. Centang `[x]` setelah `make check` hijau. Tulis catatan sing
 - [x] Skip link, focus ring, `aria-label`, reduced-motion / contrast
 
 ## T03 — Data layer
-- [ ] Migration, model, factory, seeder: users, categories, tags, article_tag, articles, media, settings, redirects
-- [ ] Scope `Article::published()`; relasi; FULLTEXT index
-- [ ] Seeder demo: 1 admin, 4 kategori (Technology, Cybersecurity, Infrastructure, Personal), 12 artikel
+- [x] Migration, model, factory, seeder: users, categories, tags, article_tag, articles, media, settings, redirects
+- [x] Scope `Article::published()`; relasi; FULLTEXT index
+- [x] Seeder demo: 1 admin, 4 kategori (Technology, Cybersecurity, Infrastructure, Personal), 12 artikel
 
 ## T04 — Services (unit test lengkap)
 - [ ] SlugGenerator (unik, akhiran numerik, kata terlarang)
@@ -74,3 +74,4 @@ Kerjakan berurutan. Centang `[x]` setelah `make check` hijau. Tulis catatan sing
 ## Catatan keputusan
 - T01: Mengunci platform PHP ke 8.3.37 di composer.json agar dependensi kompatibel dengan PHP 8.3 di container. Menyesuaikan phpunit.xml dengan force="true" dan target test pada Makefile dengan APP_ENV=testing. Breeze (Blade) dipasang dan rute/view registrasi serta reset password dihapus dengan aman sesuai spesifikasi keamanan blog personal single-admin.
 - T02: Fondasi UI hand-drawn diimplementasikan sesuai `docs/design-system.md`: token warna CSS variable dipetakan di Tailwind, font woff2 di-self-host di `public/fonts/`, layout publik (header, footer, mobile sheet) dan admin (sidebar, drawer mobile), theme toggle anti-flash, komponen hand-drawn (`<x-sketch-box>`, `<x-button>`, `<x-chip>`, `<x-badge>`, `<x-text-input>`, `<x-empty-state>`, `<x-toast>`, `<x-confirm-dialog>`), serta aksesibilitas (skip link, focus ring 3px offset 3px, aria-label, media query prefers-reduced-motion dan prefers-contrast).
+- T03: Skema data layer dibuat lengkap dengan migration, model, factory, dan seeder. Relasi Eloquent didefinisikan untuk semua entitas (User, Category, Tag, Media, Article, Setting, Redirect). Scope `Article::published()` menyaring `status = 'published'` dan `published_at <= now()`. Index FULLTEXT dibuat pada MySQL untuk pencarian artikel. Seeder demo mengisi 1 admin, 4 kategori, 8 tag, dan 12 artikel realistis.

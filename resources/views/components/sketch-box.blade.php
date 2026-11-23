@@ -17,3 +17,4 @@ $classes = 'sketch-border bg-surface text-text sketch-shadow ' . $radiusClass . 
 <{{ $as }} {{ $attributes->merge(['class' => $classes]) }}>
     {{ $slot }}
 </{{ $as }}>
+

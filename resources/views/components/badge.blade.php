@@ -16,3 +16,4 @@ $classes = "inline-flex items-center px-2.5 py-1 font-ui text-xs font-semibold r
 <span {{ $attributes->merge(['class' => $classes]) }}>
     {{ $slot }}
 </span>
+
