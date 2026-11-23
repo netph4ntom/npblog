@@ -8,6 +8,7 @@ use App\Models\Setting;
 use App\Models\Tag;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
+use Illuminate\Support\Facades\Schema;
 
 test('category can be created and has articles relationship', function () {
     $category = Category::factory()->create([
@@ -150,4 +151,14 @@ test('database seeder seeds 1 admin, 4 categories, and 12 articles', function ()
         ->and(Article::count())->toBe(12)
         ->and(Article::published()->count())->toBe(10)
         ->and(Article::featured()->count())->toBe(2);
+});
+
+test('articles table has explicit index on category_id', function () {
+    $indexes = Schema::getIndexes('articles');
+    $categoryIndex = collect($indexes)->first(function ($index) {
+        return in_array('category_id', $index['columns'], true)
+            && str_contains($index['name'], 'category_id');
+    });
+
+    expect($categoryIndex)->not->toBeNull();
 });
