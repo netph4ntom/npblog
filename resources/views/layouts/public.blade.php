@@ -1,3 +1,37 @@
+@props([
+    'title' => null,
+    'description' => null,
+    'canonical' => null,
+    'article' => null,
+])
+
+@php
+    $blogName = \App\Models\Setting::get('blog_name', config('app.name', 'NPblog'));
+    $defaultDescription = \App\Models\Setting::get('seo_default_description', \App\Models\Setting::get('blog_description', 'Blog personal minimalis bergaya hand-drawn oleh Dapit.'));
+    $defaultOgImage = \App\Models\Setting::get('hero_image') ?: (\App\Models\Setting::get('logo') ?: url('/favicon.ico'));
+
+    if ($article instanceof \App\Models\Article) {
+        $pageTitle = $article->meta_title ?: ($article->title . ' — ' . $blogName);
+        $metaDescription = $article->meta_description ?: ($article->excerpt ?: $defaultDescription);
+        $canonicalUrl = route('articles.show', $article->slug);
+        $ogType = 'article';
+        $ogTitle = $article->meta_title ?: $article->title;
+        $ogDescription = $article->meta_description ?: ($article->excerpt ?: $defaultDescription);
+        $ogUrl = $canonicalUrl;
+        $ogImage = $article->featuredMedia ? $article->featuredMedia->url : $defaultOgImage;
+    } else {
+        $pageTitle = $title ? ($title . ' — ' . $blogName) : (\App\Models\Setting::get('seo_default_title') ?: $blogName);
+        $metaDescription = $description ?? $defaultDescription;
+        $canonicalUrl = $canonical ?? url()->current();
+        $ogType = 'website';
+        $ogTitle = $title ?? $blogName;
+        $ogDescription = $metaDescription;
+        $ogUrl = $canonicalUrl;
+        $ogImage = $defaultOgImage;
+    }
+
+    $faviconUrl = \App\Models\Setting::get('favicon');
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
 <head>
@@ -5,7 +39,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ isset($title) ? $title . ' — ' . config('app.name', 'NPblog') : config('app.name', 'NPblog') }}</title>
+    <title>{{ $pageTitle }}</title>
+    <meta name="description" content="{{ $metaDescription }}">
+    <link rel="canonical" href="{{ $canonicalUrl }}">
+
+    @if(!empty($faviconUrl))
+        <link rel="icon" href="{{ $faviconUrl }}">
+    @endif
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="{{ $ogType }}">
+    <meta property="og:site_name" content="{{ $blogName }}">
+    <meta property="og:title" content="{{ $ogTitle }}">
+    <meta property="og:description" content="{{ $ogDescription }}">
+    <meta property="og:url" content="{{ $ogUrl }}">
+    <meta property="og:image" content="{{ $ogImage }}">
+    <meta property="og:locale" content="id_ID">
+
+    @if($article instanceof \App\Models\Article)
+        @if($article->published_at)
+            <meta property="article:published_time" content="{{ $article->published_at->toIso8601String() }}">
+        @endif
+        <meta property="article:author" content="{{ $article->user->name ?? \App\Models\Setting::get('author_name', 'Dapit') }}">
+        @if($article->category)
+            <meta property="article:section" content="{{ $article->category->name }}">
+        @endif
+        @foreach($article->tags as $t)
+            <meta property="article:tag" content="{{ $t->name }}">
+        @endforeach
+    @endif
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $ogTitle }}">
+    <meta name="twitter:description" content="{{ $ogDescription }}">
+    <meta name="twitter:image" content="{{ $ogImage }}">
 
     {{ $meta ?? '' }}
 

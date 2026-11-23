@@ -126,6 +126,8 @@ class ArticleController extends Controller
             'is_featured' => $request->boolean('is_featured'),
             'word_count' => $metrics['word_count'],
             'reading_time' => $metrics['reading_time'],
+            'meta_title' => ! empty($validated['meta_title']) ? (string) $validated['meta_title'] : null,
+            'meta_description' => ! empty($validated['meta_description']) ? (string) $validated['meta_description'] : null,
         ]);
 
         if (isset($validated['tags']) && is_array($validated['tags'])) {
@@ -224,6 +226,8 @@ class ArticleController extends Controller
             'is_featured' => $request->boolean('is_featured'),
             'word_count' => $metrics['word_count'],
             'reading_time' => $metrics['reading_time'],
+            'meta_title' => ! empty($validated['meta_title']) ? (string) $validated['meta_title'] : null,
+            'meta_description' => ! empty($validated['meta_description']) ? (string) $validated['meta_description'] : null,
         ]);
 
         if ($oldMediaToClean !== null) {

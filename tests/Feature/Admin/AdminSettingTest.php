@@ -113,4 +113,3 @@ test('settings validation rejects empty blog name or invalid email', function ()
 
     $response->assertSessionHasErrors(['blog_name', 'contact_email']);
 });
-

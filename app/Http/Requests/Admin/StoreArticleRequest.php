@@ -30,6 +30,8 @@ class StoreArticleRequest extends FormRequest
             'is_featured' => ['nullable', 'boolean'],
             'featured_image' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'featured_alt_text' => ['nullable', 'string', 'max:255'],
+            'meta_title' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:500'],
             'tags' => ['nullable', 'array'],
             'tags.*' => ['exists:tags,id'],
         ];

@@ -265,6 +265,37 @@
                         >{{ old('excerpt', $article->excerpt) }}</textarea>
                         <x-input-error :messages="$errors->get('excerpt')" class="mt-1" />
                     </div>
+
+                    <!-- SEO Fields -->
+                    <div class="p-4 bg-surface border border-ink sketch-radius-b space-y-4">
+                        <div class="pb-2 border-b border-border">
+                            <h3 class="font-heading text-lg font-bold text-ink">Optimasi Mesin Pencari (SEO)</h3>
+                            <p class="font-ui text-xs text-text-secondary">Opsional. Kosongkan untuk menggunakan judul dan ringkasan artikel secara otomatis.</p>
+                        </div>
+                        <div>
+                            <x-input-label for="meta_title" value="Judul SEO Khusus (Meta Title)" />
+                            <x-text-input
+                                id="meta_title"
+                                name="meta_title"
+                                type="text"
+                                class="w-full text-sm"
+                                placeholder="Judul yang tampil di mesin pencari..."
+                                value="{{ old('meta_title', $article->meta_title) }}"
+                            />
+                            <x-input-error :messages="$errors->get('meta_title')" class="mt-1" />
+                        </div>
+                        <div>
+                            <x-input-label for="meta_description" value="Deskripsi SEO Khusus (Meta Description)" />
+                            <textarea
+                                id="meta_description"
+                                name="meta_description"
+                                rows="2"
+                                class="sketch-border sketch-radius-a bg-surface text-text font-body text-sm p-3 w-full"
+                                placeholder="Deskripsi ringkas yang tampil di hasil pencarian..."
+                            >{{ old('meta_description', $article->meta_description) }}</textarea>
+                            <x-input-error :messages="$errors->get('meta_description')" class="mt-1" />
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Meta & Sidebar Options (1 column) -->

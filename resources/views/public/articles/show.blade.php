@@ -1,4 +1,4 @@
-<x-public-layout :title="$article->title">
+<x-public-layout :article="$article">
     <div class="max-w-[740px] mx-auto py-8 sm:py-12 space-y-8">
         <!-- Breadcrumb / Back Link -->
         <div class="flex items-center justify-between text-sm font-ui">
