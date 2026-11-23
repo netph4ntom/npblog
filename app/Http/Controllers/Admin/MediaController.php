@@ -54,7 +54,18 @@ class MediaController extends Controller
         $altText = $request->input('alt_text');
         $altText = is_string($altText) ? $altText : null;
 
-        $mediaItem = $processor->process($file, $user, $altText);
+        try {
+            $mediaItem = $processor->process($file, $user, $altText);
+        } catch (\InvalidArgumentException $e) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => $e->getMessage(),
+                    'errors' => ['image' => [$e->getMessage()]],
+                ], 422);
+            }
+
+            return back()->withInput()->withErrors(['image' => $e->getMessage()]);
+        }
 
         if ($request->wantsJson()) {
             return response()->json([
