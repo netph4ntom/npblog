@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Public\AboutController;
 use App\Http\Controllers\Public\ArticleController;
@@ -24,15 +27,14 @@ Route::get('/search', SearchController::class)->name('search');
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/', DashboardController::class)->name('dashboard');
+    Route::post('/articles/preview', [AdminArticleController::class, 'preview'])->name('articles.preview');
+    Route::resource('articles', AdminArticleController::class);
+    Route::resource('categories', AdminCategoryController::class)->except(['show']);
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

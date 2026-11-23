@@ -39,11 +39,11 @@ Kerjakan berurutan. Centang `[x]` setelah `make check` hijau. Tulis catatan sing
 - [x] `/admin/*` guest diarahkan ke login; tidak ada `/register`; halaman admin dan login `noindex`
 
 ## T07 — Admin artikel dan kategori
-- [ ] Overview: 4 stat, Recent Publications, Continue Writing
-- [ ] Daftar artikel (tabel desktop, kartu mobile), filter status/kategori, search, konfirmasi hapus
-- [ ] Editor Markdown: judul, slug inline, toolbar, word count, waktu baca, status, kategori, preview server-side
-- [ ] Draft/Published/Unpublish; `published_at` default sekarang
-- [ ] CRUD kategori; kategori terpakai tidak bisa dihapus tanpa memindahkan artikel
+- [x] Overview: 4 stat, Recent Publications, Continue Writing
+- [x] Daftar artikel (tabel desktop, kartu mobile), filter status/kategori, search, konfirmasi hapus
+- [x] Editor Markdown: judul, slug inline, toolbar, word count, waktu baca, status, kategori, preview server-side
+- [x] Draft/Published/Unpublish; `published_at` default sekarang
+- [x] CRUD kategori; kategori terpakai tidak bisa dihapus tanpa memindahkan artikel
 
 ## T08 — Media
 - [ ] Upload gambar dengan pipeline: validasi MIME, hapus EXIF, resize 1600px, WebP + thumbnail, nama acak
@@ -78,3 +78,4 @@ Kerjakan berurutan. Centang `[x]` setelah `make check` hijau. Tulis catatan sing
 - T04: Core services diimplementasikan dengan unit test lengkap: SlugGenerator menangani bentrok slug dengan akhiran numerik `-2`, memeriksa data soft-deleted, dan memfilter reserved route slugs. ReadingTime menghitung kata berbasis token Unicode setelah membersihkan markup dengan rumus `ceil(words / 200)` dan minimum 1 menit. ExcerptGenerator membatasi ringkasan eksplisit maksimal 300 karakter serta menyediakan fallback otomatis dari paragraf pertama (~160 karakter). MarkdownRenderer mengintegrasikan CommonMark + GFM (tabel, task list, strikethrough), HeadingPermalinkExtension untuk anchor heading ber-`id`, HighlightedCodeRenderer (berbasis scrivo/highlight.php) untuk syntax highlighting dengan kelas `hljs`, serta sanitasi allowlist aman via symfony/html-sanitizer.
 - T05: Halaman publik dibangun lengkap dengan pemisahan controller di `Http/Controllers/Public/` (HomeController, ArticleController, AboutController, SearchController). Seluruh query publik menggunakan scope `Article::published()`. Rute artikel detail mendukung redirect 301 untuk slug lama dari tabel redirects jika artikel terbit, serta mengembalikan 404 jika artikel masih draft atau terjadwal. Pencarian artikel dioptimalkan dengan scope `Article::scopeSearch()` yang menggunakan MySQL FULLTEXT di lingkungan produksi dan fallback LIKE di pengujian SQLite/transaksi uncommitted. Halaman error 404 dan 500 dibuat bertema hand-drawn dengan sketch box dan tombol aksi. Blok kode dilengkapi wrapper hand-drawn, label bahasa, dan tombol Copy bertenaga Clipboard API.
 - T06: Autentikasi admin diperkuat sesuai aturan keamanan AGENTS.md. Rute login menerapkan rate limiting (5 percobaan, throttle) dan pesan error generik yang identik untuk email yang tidak ada maupun password salah untuk mencegah enumerasi pengguna. Session diregenerasi saat login sukses. Perintah Artisan `npblog:create-admin` dan `npblog:reset-password` dibuat untuk manajemen akun administrator privat tanpa rute registrasi publik. Seluruh rute `/admin` dan `/admin/*` dilindungi middleware auth, dan meta tag `<meta name="robots" content="noindex, nofollow">` dipasang pada layout admin dan guest (login).
+- T07: Modul admin artikel dan kategori selesai diimplementasikan. Dashboard menyajikan 4 kartu statistik (Total Artikel, Terbit, Draf, Kategori), daftar publikasi terbaru, dan draf untuk melanjutkan penulisan. Manajemen artikel menyediakan tabel desktop dan kartu mobile, filter status/kategori, pencarian judul, serta konfirmasi hapus (soft delete). Editor Markdown dilengkapi toolbar, slug inline otomatis, metrik dinamis (word count dan reading time), serta server-side preview via endpoint POST /admin/articles/preview agar sanitasi HTML dan syntax highlighting identik dengan tampilan publik. Alur draft <-> publish didukung penuh, termasuk pengalihan 301 otomatis ke tabel redirects saat slug artikel terbit diubah. CRUD kategori mendukung pembuatan slug otomatis dan memblokir penghapusan kategori bila masih memiliki relasi artikel terkait.
