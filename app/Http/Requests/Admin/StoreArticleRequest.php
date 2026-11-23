@@ -24,7 +24,7 @@ class StoreArticleRequest extends FormRequest
             'slug' => ['nullable', 'string', 'max:255'],
             'category_id' => ['nullable', 'exists:categories,id'],
             'body' => ['required', 'string'],
-            'excerpt' => ['nullable', 'string', 'max:500'],
+            'excerpt' => ['nullable', 'string', 'max:300'],
             'status' => ['required', 'in:draft,published'],
             'published_at' => ['nullable', 'date'],
             'is_featured' => ['nullable', 'boolean'],

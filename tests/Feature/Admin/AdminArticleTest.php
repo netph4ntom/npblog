@@ -209,3 +209,16 @@ test('server-side preview endpoint renders markdown to sanitized html', function
         ->and($html)->toContain('<strong>Teks Tebal</strong>')
         ->and($html)->not->toContain('<script>');
 });
+
+test('article creation fails when excerpt exceeds 300 characters', function () {
+    $longExcerpt = str_repeat('a', 301);
+
+    $response = $this->actingAs($this->admin)->post('/admin/articles', [
+        'title' => 'Artikel Validasi Excerpt',
+        'body' => 'Isi artikel minimal.',
+        'excerpt' => $longExcerpt,
+        'status' => 'draft',
+    ]);
+
+    $response->assertSessionHasErrors(['excerpt']);
+});
