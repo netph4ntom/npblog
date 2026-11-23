@@ -1,3 +1,171 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+    font-family: 'Caveat';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/fonts/caveat-700.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Patrick Hand';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/fonts/patrick-hand-400.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/fonts/dm-sans-400.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'DM Sans';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('/fonts/dm-sans-700.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('/fonts/jetbrains-mono-400.woff2') format('woff2');
+}
+
+:root {
+    --bg: #F6F6F3;
+    --surface: #FFFFFF;
+    --text: #20211F;
+    --text-2: #6B6C66;
+    --border: #E5E5E0;
+    --ink: #20211F;
+    --accent: #697B68;
+    --accent-dark: #435343;
+    --on-accent: #FFFFFF;
+    --warning-text: #8A5A00;
+    --warning-bg: #F8EBCB;
+    --danger: #B3261E;
+    --admin-sidebar: #1F211E;
+
+    --radius-sketch-a: 255px 15px 225px 15px / 15px 225px 15px 255px;
+    --radius-sketch-b: 15px 225px 15px 255px / 255px 15px 225px 15px;
+    --radius-sketch-c: 225px 15px 255px 15px / 15px 255px 15px 225px;
+}
+
+.dark {
+    --bg: #222520;
+    --surface: #2B2F29;
+    --text: #F4F4EF;
+    --text-2: #A4A69D;
+    --border: #41453E;
+    --ink: #E9E9E2;
+    --accent: #9BAF91;
+    --accent-dark: #B4C5AB;
+    --on-accent: #1B1E1A;
+    --warning-text: #F0C36B;
+    --warning-bg: #3A3220;
+    --danger: #F2B8B5;
+    --admin-sidebar: #1F211E;
+}
+
+@layer base {
+    body {
+        background-color: var(--bg);
+        color: var(--text);
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    /* Focus ring solid 3px offset 3px */
+    :focus-visible {
+        outline: 3px solid var(--accent-dark) !important;
+        outline-offset: 3px !important;
+    }
+}
+
+/* Sketch Box Presets */
+.sketch-border {
+    border: 2px solid var(--ink);
+}
+
+.sketch-radius-a {
+    border-radius: var(--radius-sketch-a);
+}
+
+.sketch-radius-b {
+    border-radius: var(--radius-sketch-b);
+}
+
+.sketch-radius-c {
+    border-radius: var(--radius-sketch-c);
+}
+
+.sketch-shadow {
+    box-shadow: 3px 3px 0 var(--ink);
+}
+
+.sketch-shadow-sm {
+    box-shadow: 2px 2px 0 var(--ink);
+}
+
+.sketch-shadow-hover {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sketch-shadow-hover:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--ink);
+}
+
+.sketch-btn-press:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--ink);
+}
+
+/* Paper noise texture */
+.paper-texture {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* Highlighter mark */
+.marker-highlight {
+    background: linear-gradient(104deg, transparent 0%, rgba(105, 123, 104, 0.35) 15%, rgba(105, 123, 104, 0.35) 85%, transparent 100%);
+}
+
+.dark .marker-highlight {
+    background: linear-gradient(104deg, transparent 0%, rgba(155, 175, 145, 0.35) 15%, rgba(155, 175, 145, 0.35) 85%, transparent 100%);
+}
+
+/* Accessibility: prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Accessibility: prefers-contrast: more */
+@media (prefers-contrast: more) {
+    .paper-texture {
+        background-image: none !important;
+    }
+    .sketch-border {
+        border-width: 3px !important;
+    }
+    :focus-visible {
+        outline-width: 4px !important;
+    }
+}
