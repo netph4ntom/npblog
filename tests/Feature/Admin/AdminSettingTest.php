@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Media;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -87,6 +88,28 @@ test('admin can upload logo, hero image, and profile picture in settings', funct
     expect($logoUrl)->not->toBeEmpty()
         ->and($heroUrl)->not->toBeEmpty()
         ->and($profileUrl)->not->toBeEmpty();
+});
+
+test('admin removing or replacing settings images deletes old files from storage disk', function () {
+    $logoFile = UploadedFile::fake()->image('logo.png', 300, 100);
+
+    $this->actingAs($this->admin)->put('/admin/settings', [
+        'blog_name' => 'NPblog',
+        'logo' => $logoFile,
+    ]);
+
+    $media = Media::where('alt_text', 'Logo Blog')->first();
+    expect($media)->not->toBeNull();
+    Storage::disk('public')->assertExists($media->path);
+
+    $this->actingAs($this->admin)->put('/admin/settings', [
+        'blog_name' => 'NPblog',
+        'remove_logo' => '1',
+    ]);
+
+    expect(Setting::get('logo'))->toBe('')
+        ->and(Media::find($media->id))->toBeNull();
+    Storage::disk('public')->assertMissing($media->path);
 });
 
 test('admin can remove existing uploaded images in settings', function () {

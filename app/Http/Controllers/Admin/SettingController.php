@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateSettingsRequest;
+use App\Models\Media;
 use App\Models\Setting;
 use App\Models\User;
 use App\Services\MediaProcessor;
@@ -71,20 +72,25 @@ class SettingController extends Controller
 
         // 2. Handle image removals
         if ($request->boolean('remove_logo')) {
+            $this->deleteSettingMedia((string) Setting::get('logo'));
             Setting::set('logo', '');
         }
         if ($request->boolean('remove_favicon')) {
+            $this->deleteSettingMedia((string) Setting::get('favicon'));
             Setting::set('favicon', '');
         }
         if ($request->boolean('remove_hero_image')) {
+            $this->deleteSettingMedia((string) Setting::get('hero_image'));
             Setting::set('hero_image', '');
         }
         if ($request->boolean('remove_profile_image')) {
+            $this->deleteSettingMedia((string) Setting::get('profile_image'));
             Setting::set('profile_image', '');
         }
 
         // 3. Handle image uploads via MediaProcessor
         if ($request->hasFile('logo')) {
+            $this->deleteSettingMedia((string) Setting::get('logo'));
             /** @var UploadedFile $logoFile */
             $logoFile = $request->file('logo');
             $media = $mediaProcessor->process($logoFile, $user, 'Logo Blog');
@@ -92,6 +98,7 @@ class SettingController extends Controller
         }
 
         if ($request->hasFile('hero_image')) {
+            $this->deleteSettingMedia((string) Setting::get('hero_image'));
             /** @var UploadedFile $heroFile */
             $heroFile = $request->file('hero_image');
             $media = $mediaProcessor->process($heroFile, $user, 'Hero Banner Blog');
@@ -99,6 +106,7 @@ class SettingController extends Controller
         }
 
         if ($request->hasFile('profile_image')) {
+            $this->deleteSettingMedia((string) Setting::get('profile_image'));
             /** @var UploadedFile $profileFile */
             $profileFile = $request->file('profile_image');
             $media = $mediaProcessor->process($profileFile, $user, 'Foto Profil Penulis');
@@ -106,6 +114,7 @@ class SettingController extends Controller
         }
 
         if ($request->hasFile('favicon')) {
+            $this->deleteSettingMedia((string) Setting::get('favicon'));
             /** @var UploadedFile $favFile */
             $favFile = $request->file('favicon');
             $ext = $favFile->getClientOriginalExtension() ?: 'ico';
@@ -126,5 +135,27 @@ class SettingController extends Controller
         }
 
         return redirect()->route('admin.settings.edit')->with('success', 'Pengaturan blog berhasil diperbarui.');
+    }
+
+    /**
+     * Delete existing media and associated storage files when removed or replaced.
+     */
+    protected function deleteSettingMedia(?string $url): void
+    {
+        if (empty($url)) {
+            return;
+        }
+
+        $cleanPath = ltrim(preg_replace('#^.*?/storage/#', '', $url) ?? '', '/');
+        if ($cleanPath === '') {
+            return;
+        }
+
+        $media = Media::where('path', $cleanPath)->first();
+        if ($media) {
+            $media->delete();
+        } elseif (Storage::disk('public')->exists($cleanPath)) {
+            Storage::disk('public')->delete($cleanPath);
+        }
     }
 }
