@@ -28,10 +28,10 @@ Kerjakan berurutan. Centang `[x]` setelah `make check` hijau. Tulis catatan sing
 - [x] Excerpt fallback otomatis
 
 ## T05 — Halaman publik
-- [ ] Home, Articles (search + chip kategori + pagination yang menjaga query), Article detail, About, Search
-- [ ] Draft dan artikel terjadwal menghasilkan 404; halaman 404/500 bertema
-- [ ] Code block: label bahasa + tombol Copy
-- [ ] Responsif 360–1920px; Lighthouse mobile ≥ 90 untuk Home dan Article
+- [x] Home, Articles (search + chip kategori + pagination yang menjaga query), Article detail, About, Search
+- [x] Draft dan artikel terjadwal menghasilkan 404; halaman 404/500 bertema
+- [x] Code block: label bahasa + tombol Copy
+- [x] Responsif 360–1920px; Lighthouse mobile ≥ 90 untuk Home dan Article
 
 ## T06 — Autentikasi admin
 - [ ] `/login` dengan rate limiting dan pesan generik; session diregenerasi; logout
@@ -76,3 +76,4 @@ Kerjakan berurutan. Centang `[x]` setelah `make check` hijau. Tulis catatan sing
 - T02: Fondasi UI hand-drawn diimplementasikan sesuai `docs/design-system.md`: token warna CSS variable dipetakan di Tailwind, font woff2 di-self-host di `public/fonts/`, layout publik (header, footer, mobile sheet) dan admin (sidebar, drawer mobile), theme toggle anti-flash, komponen hand-drawn (`<x-sketch-box>`, `<x-button>`, `<x-chip>`, `<x-badge>`, `<x-text-input>`, `<x-empty-state>`, `<x-toast>`, `<x-confirm-dialog>`), serta aksesibilitas (skip link, focus ring 3px offset 3px, aria-label, media query prefers-reduced-motion dan prefers-contrast).
 - T03: Skema data layer dibuat lengkap dengan migration, model, factory, dan seeder. Relasi Eloquent didefinisikan untuk semua entitas (User, Category, Tag, Media, Article, Setting, Redirect). Scope `Article::published()` menyaring `status = 'published'` dan `published_at <= now()`. Index FULLTEXT dibuat pada MySQL untuk pencarian artikel. Seeder demo mengisi 1 admin, 4 kategori, 8 tag, dan 12 artikel realistis.
 - T04: Core services diimplementasikan dengan unit test lengkap: SlugGenerator menangani bentrok slug dengan akhiran numerik `-2`, memeriksa data soft-deleted, dan memfilter reserved route slugs. ReadingTime menghitung kata berbasis token Unicode setelah membersihkan markup dengan rumus `ceil(words / 200)` dan minimum 1 menit. ExcerptGenerator membatasi ringkasan eksplisit maksimal 300 karakter serta menyediakan fallback otomatis dari paragraf pertama (~160 karakter). MarkdownRenderer mengintegrasikan CommonMark + GFM (tabel, task list, strikethrough), HeadingPermalinkExtension untuk anchor heading ber-`id`, HighlightedCodeRenderer (berbasis scrivo/highlight.php) untuk syntax highlighting dengan kelas `hljs`, serta sanitasi allowlist aman via symfony/html-sanitizer.
+- T05: Halaman publik dibangun lengkap dengan pemisahan controller di `Http/Controllers/Public/` (HomeController, ArticleController, AboutController, SearchController). Seluruh query publik menggunakan scope `Article::published()`. Rute artikel detail mendukung redirect 301 untuk slug lama dari tabel redirects jika artikel terbit, serta mengembalikan 404 jika artikel masih draft atau terjadwal. Pencarian artikel dioptimalkan dengan scope `Article::scopeSearch()` yang menggunakan MySQL FULLTEXT di lingkungan produksi dan fallback LIKE di pengujian SQLite/transaksi uncommitted. Halaman error 404 dan 500 dibuat bertema hand-drawn dengan sketch box dan tombol aksi. Blok kode dilengkapi wrapper hand-drawn, label bahasa, dan tombol Copy bertenaga Clipboard API.

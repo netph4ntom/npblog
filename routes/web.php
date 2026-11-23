@@ -1,12 +1,28 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Public\AboutController;
+use App\Http\Controllers\Public\ArticleController;
+use App\Http\Controllers\Public\HomeController;
+use App\Http\Controllers\Public\SearchController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
+Route::get('/', HomeController::class)->name('home');
+Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
+Route::get('/articles/{slug}', [ArticleController::class, 'show'])->name('articles.show');
+Route::get('/about', AboutController::class)->name('about');
+Route::get('/search', SearchController::class)->name('search');
 
+/*
+|--------------------------------------------------------------------------
+| Admin / Authenticated Routes
+|--------------------------------------------------------------------------
+*/
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');

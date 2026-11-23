@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Database\Factories\ArticleFactory;
+use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -84,6 +85,34 @@ class Article extends Model
     public function scopeFeatured(Builder $query): Builder
     {
         return $query->published()->where('is_featured', true);
+    }
+
+    /**
+     * Scope a query to search articles across title, excerpt, and body.
+     *
+     * @param  Builder<Article>  $query
+     * @return Builder<Article>
+     */
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        if ($term === null || trim($term) === '') {
+            return $query;
+        }
+
+        $term = trim($term);
+        /** @var Connection $connection */
+        $connection = $query->getConnection();
+        $isMysql = $connection->getDriverName() === 'mysql';
+
+        if ($isMysql && ! app()->environment('testing')) {
+            return $query->whereFullText(['title', 'excerpt', 'body'], $term);
+        }
+
+        return $query->where(function (Builder $subQuery) use ($term) {
+            $subQuery->where('title', 'like', "%{$term}%")
+                ->orWhere('excerpt', 'like', "%{$term}%")
+                ->orWhere('body', 'like', "%{$term}%");
+        });
     }
 
     /**

@@ -7,6 +7,8 @@
 
     <title>{{ isset($title) ? $title . ' — ' . config('app.name', 'NPblog') : config('app.name', 'NPblog') }}</title>
 
+    {{ $meta ?? '' }}
+
     <!-- Theme detector without flash -->
     <script>
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
