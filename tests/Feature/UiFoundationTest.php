@@ -76,3 +76,15 @@ test('button component automatically renders as anchor when href is provided', f
     expect((string) $view)->toContain('<a ', 'href="/articles"')
         ->and((string) $view)->not->toContain('<button');
 });
+
+test('admin layout sidebar is fixed and supports collapsing to icons', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get('/dashboard');
+
+    $response->assertStatus(200)
+        ->assertSee('sidebarCollapsed', false)
+        ->assertSee('toggleSidebar', false)
+        ->assertSee('sticky top-0 h-screen', false)
+        ->assertSee('w-20', false);
+});
