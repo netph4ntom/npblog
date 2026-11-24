@@ -120,17 +120,19 @@
                     <!-- Slug Inline -->
                     <div>
                         <x-input-label for="slug" value="Slug URL (opsional, otomatis dibuat bila kosong)" />
-                        <div class="sketch-border sketch-radius-a bg-surface flex items-center min-h-[44px] overflow-hidden focus-within:ring-2 focus-within:ring-accent/20 focus-within:border-ink transition-all shadow-sm">
-                            <span class="font-mono text-sm text-text-secondary px-3.5 bg-bg/60 border-r-2 border-ink select-none shrink-0 self-stretch flex items-center whitespace-nowrap">
-                                /articles/
-                            </span>
-                            <input
+                        <div class="relative flex items-center">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none select-none z-10">
+                                <span class="font-mono text-sm text-text-secondary flex items-center pr-2 border-r border-ink/40">
+                                    /articles/
+                                </span>
+                            </div>
+                            <x-text-input
                                 id="slug"
                                 name="slug"
                                 type="text"
                                 x-model="slug"
                                 @input="onSlugInput()"
-                                class="w-full bg-transparent border-0 font-mono text-sm px-3 py-2 text-text placeholder:text-text-secondary focus:ring-0 focus:outline-none"
+                                class="w-full font-mono text-sm pl-[124px]"
                                 placeholder="judul-artikel-otomatis"
                                 value="{{ old('slug') }}"
                             />
