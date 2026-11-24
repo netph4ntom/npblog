@@ -34,14 +34,70 @@
                 onSlugInput() {
                     this.slugManuallyEdited = true;
                 },
-                insertToolbar(prefix, suffix = '') {
+                insertToolbar(prefix, suffix = '', defaultText = '') {
+                    const el = this.$refs.bodyTextarea;
+                    if (!el) return;
+                    const start = el.selectionStart;
+                    const end = el.selectionEnd;
+                    const sel = el.value.substring(start, end) || defaultText;
+                    const replace = prefix + sel + suffix;
+                    el.setRangeText(replace, start, end, 'select');
+                    this.body = el.value;
+                    this.updateMetrics();
+                    el.focus();
+                },
+                insertHeading(level) {
+                    const el = this.$refs.bodyTextarea;
+                    if (!el) return;
+                    const start = el.selectionStart;
+                    const end = el.selectionEnd;
+                    const sel = el.value.substring(start, end) || `Judul Heading ${level}`;
+                    const hashes = '#'.repeat(level);
+                    const replace = `\n${hashes} ${sel}\n`;
+                    el.setRangeText(replace, start, end, 'select');
+                    this.body = el.value;
+                    this.updateMetrics();
+                    el.focus();
+                },
+                insertLink() {
+                    const el = this.$refs.bodyTextarea;
+                    if (!el) return;
+                    const start = el.selectionStart;
+                    const end = el.selectionEnd;
+                    const sel = el.value.substring(start, end).trim();
+
+                    let text = 'Teks Tautan';
+                    let url = 'https://';
+
+                    if (sel) {
+                        if (/^https?:\/\//i.test(sel)) {
+                            url = sel;
+                            text = 'Tautan';
+                        } else {
+                            text = sel;
+                        }
+                    }
+
+                    const replace = `[${text}](${url})`;
+                    el.setRangeText(replace, start, end, 'select');
+                    this.body = el.value;
+                    this.updateMetrics();
+                    el.focus();
+                },
+                insertCode() {
                     const el = this.$refs.bodyTextarea;
                     if (!el) return;
                     const start = el.selectionStart;
                     const end = el.selectionEnd;
                     const sel = el.value.substring(start, end);
-                    const replace = prefix + sel + suffix;
-                    el.setRangeText(replace, start, end, 'select');
+
+                    if (sel.includes('\n') || sel.length > 50) {
+                        const replace = `\n\`\`\`bash\n${sel || 'echo "Hello World"'}\n\`\`\`\n`;
+                        el.setRangeText(replace, start, end, 'select');
+                    } else {
+                        const replace = `\`${sel || 'kode'}\``;
+                        el.setRangeText(replace, start, end, 'select');
+                    }
                     this.body = el.value;
                     this.updateMetrics();
                     el.focus();
@@ -61,6 +117,11 @@
                         });
                         const data = await res.json();
                         this.previewHtml = data.html || '<p class="text-text-secondary italic">Tidak ada konten untuk dipratinjau.</p>';
+                        this.$nextTick(() => {
+                            if (window.setupCodeBlocks) {
+                                window.setupCodeBlocks();
+                            }
+                        });
                     } catch (e) {
                         this.previewHtml = '<p class="text-danger">Gagal memuat pratinjau markdown server-side.</p>';
                     } finally {
@@ -180,10 +241,15 @@
                                     <button
                                         type="button"
                                         @click="fetchPreview()"
-                                        class="px-3 py-1 rounded transition-colors font-semibold"
+                                        class="px-3 py-1 rounded transition-colors font-semibold flex items-center space-x-1.5"
                                         :class="tab === 'preview' ? 'bg-accent-dark text-on-accent' : 'text-text-secondary hover:text-ink'"
+                                        title="Lihat hasil format teks & layout artikel"
                                     >
-                                        Pratinjau Server
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        <span>Pratinjau Server</span>
                                     </button>
                                 </div>
 
@@ -191,7 +257,7 @@
                                 <div x-show="tab === 'edit'" class="flex items-center space-x-1 font-mono text-sm">
                                     <button
                                         type="button"
-                                        @click="insertToolbar('**', '**')"
+                                        @click="insertToolbar('**', '**', 'teks tebal')"
                                         title="Tebal (Bold)"
                                         class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[32px] min-w-[32px]"
                                     >
@@ -199,7 +265,7 @@
                                     </button>
                                     <button
                                         type="button"
-                                        @click="insertToolbar('*', '*')"
+                                        @click="insertToolbar('*', '*', 'teks miring')"
                                         title="Miring (Italic)"
                                         class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface italic min-h-[32px] min-w-[32px]"
                                     >
@@ -207,7 +273,15 @@
                                     </button>
                                     <button
                                         type="button"
-                                        @click="insertToolbar('\n## ', '\n')"
+                                        @click="insertHeading(1)"
+                                        title="Heading 1"
+                                        class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[32px]"
+                                    >
+                                        H1
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="insertHeading(2)"
                                         title="Heading 2"
                                         class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[32px]"
                                     >
@@ -215,7 +289,7 @@
                                     </button>
                                     <button
                                         type="button"
-                                        @click="insertToolbar('\n### ', '\n')"
+                                        @click="insertHeading(3)"
                                         title="Heading 3"
                                         class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[32px]"
                                     >
@@ -223,23 +297,23 @@
                                     </button>
                                     <button
                                         type="button"
-                                        @click="insertToolbar('[', '](url)')"
-                                        title="Tautan (Link)"
+                                        @click="insertLink()"
+                                        title="Tautan (Link) [Teks](URL)"
                                         class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px]"
                                     >
                                         Link
                                     </button>
                                     <button
                                         type="button"
-                                        @click="insertToolbar('`', '`')"
-                                        title="Inline Code"
+                                        @click="insertCode()"
+                                        title="Kode (Inline / Block)"
                                         class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px]"
                                     >
                                         &lt;/&gt;
                                     </button>
                                     <button
                                         type="button"
-                                        @click="insertToolbar('\n> ', '\n')"
+                                        @click="insertToolbar('\n> ', '\n', 'Kutipan...')"
                                         title="Kutipan (Quote)"
                                         class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px]"
                                     >
@@ -247,7 +321,7 @@
                                     </button>
                                     <button
                                         type="button"
-                                        @click="insertToolbar('\n- ', '\n')"
+                                        @click="insertToolbar('\n- ', '\n', 'Item daftar')"
                                         title="Daftar (List)"
                                         class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px]"
                                     >
@@ -268,6 +342,14 @@
                                     class="w-full p-4 font-mono text-sm bg-surface text-text focus:outline-none border-0 resize-y"
                                     required
                                 >{{ old('body', $article->body) }}</textarea>
+
+                                <div class="px-4 py-2 bg-bg/60 border-t border-border text-xs font-ui text-text-secondary flex items-center justify-between">
+                                    <span>Gunakan format Markdown (Heading #, Code `, Link [text](url)). Klik <strong>Pratinjau Server</strong> di atas untuk melihat tampilan akhirnya.</span>
+                                    <button type="button" @click="fetchPreview()" class="text-accent-dark hover:underline font-bold flex items-center space-x-1">
+                                        <span>Buka Pratinjau</span>
+                                        <span>&rarr;</span>
+                                    </button>
+                                </div>
                             </div>
 
                             <!-- Preview Area -->
@@ -284,7 +366,7 @@
                                 <div
                                     x-show="!loadingPreview"
                                     x-html="previewHtml"
-                                    class="prose prose-lg dark:prose-invert max-w-none font-body"
+                                    class="article-body font-body text-lg leading-relaxed text-text max-w-none"
                                 ></div>
                             </div>
                         </div>

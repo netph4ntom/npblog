@@ -66,5 +66,6 @@ function setupCodeBlocks() {
 }
 
 document.addEventListener('DOMContentLoaded', setupCodeBlocks);
+window.setupCodeBlocks = setupCodeBlocks;
 
 Alpine.start();

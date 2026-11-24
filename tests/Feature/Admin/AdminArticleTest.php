@@ -93,6 +93,9 @@ test('admin article create screen can be rendered', function () {
         ->assertSee('Tulis Artikel Baru')
         ->assertSee('Judul Artikel')
         ->assertSee('Markdown')
+        ->assertSee('H1')
+        ->assertSee('H2')
+        ->assertSee('article-body')
         ->assertSee('/articles/')
         ->assertDontSee('x-init="updateMetrics()" >', false);
 });
