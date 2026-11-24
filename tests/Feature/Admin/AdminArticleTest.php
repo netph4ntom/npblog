@@ -92,7 +92,9 @@ test('admin article create screen can be rendered', function () {
     $response->assertOk()
         ->assertSee('Tulis Artikel Baru')
         ->assertSee('Judul Artikel')
-        ->assertSee('Markdown');
+        ->assertSee('Markdown')
+        ->assertSee('/articles/')
+        ->assertDontSee('x-init="updateMetrics()" >', false);
 });
 
 test('admin can store new article with tags, rendered html, word count, and reading time', function () {
@@ -129,7 +131,9 @@ test('admin article edit screen can be rendered with existing values', function 
 
     $response->assertOk()
         ->assertSee('Edit Artikel')
-        ->assertSee('Artikel Untuk Diedit');
+        ->assertSee('Artikel Untuk Diedit')
+        ->assertSee('/articles/')
+        ->assertDontSee('x-init="updateMetrics()" >', false);
 });
 
 test('admin can update article and changing slug of published article creates 301 redirect', function () {

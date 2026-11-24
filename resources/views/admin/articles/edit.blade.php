@@ -1,53 +1,85 @@
 <x-admin-layout header="Edit Artikel">
+    <script>
+        function articleEditor(config = {}) {
+            return {
+                tab: 'edit',
+                body: config.initialBody || '',
+                previewHtml: '',
+                loadingPreview: false,
+                wordCount: 0,
+                readingTime: 1,
+                title: config.initialTitle || '',
+                slug: config.initialSlug || '',
+                slugManuallyEdited: Boolean(config.initialSlug),
+                updateMetrics() {
+                    const text = (this.body || '').trim();
+                    const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+                    this.wordCount = words;
+                    this.readingTime = Math.max(1, Math.ceil(words / 200));
+                },
+                generateSlug(text) {
+                    return (text || '')
+                        .toString()
+                        .toLowerCase()
+                        .trim()
+                        .replace(/&/g, '-dan-')
+                        .replace(/[\s\W-]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
+                },
+                onTitleInput() {
+                    if (!this.slugManuallyEdited) {
+                        this.slug = this.generateSlug(this.title);
+                    }
+                },
+                onSlugInput() {
+                    this.slugManuallyEdited = true;
+                },
+                insertToolbar(prefix, suffix = '') {
+                    const el = this.$refs.bodyTextarea;
+                    if (!el) return;
+                    const start = el.selectionStart;
+                    const end = el.selectionEnd;
+                    const sel = el.value.substring(start, end);
+                    const replace = prefix + sel + suffix;
+                    el.setRangeText(replace, start, end, 'select');
+                    this.body = el.value;
+                    this.updateMetrics();
+                    el.focus();
+                },
+                async fetchPreview() {
+                    this.tab = 'preview';
+                    this.loadingPreview = true;
+                    try {
+                        const res = await fetch(config.previewUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': config.csrfToken,
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({ body: this.body })
+                        });
+                        const data = await res.json();
+                        this.previewHtml = data.html || '<p class="text-text-secondary italic">Tidak ada konten untuk dipratinjau.</p>';
+                    } catch (e) {
+                        this.previewHtml = '<p class="text-danger">Gagal memuat pratinjau markdown server-side.</p>';
+                    } finally {
+                        this.loadingPreview = false;
+                    }
+                }
+            };
+        }
+    </script>
+
     <div
         class="space-y-6"
-        x-data="{
-            tab: 'edit',
-            body: @js(old('body', $article->body)),
-            previewHtml: '',
-            loadingPreview: false,
-            wordCount: 0,
-            readingTime: 1,
-            updateMetrics() {
-                const text = (this.body || '').trim();
-                const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
-                this.wordCount = words;
-                this.readingTime = Math.max(1, Math.ceil(words / 200));
-            },
-            insertToolbar(prefix, suffix = '') {
-                const el = this.$refs.bodyTextarea;
-                if (!el) return;
-                const start = el.selectionStart;
-                const end = el.selectionEnd;
-                const sel = el.value.substring(start, end);
-                const replace = prefix + sel + suffix;
-                el.setRangeText(replace, start, end, 'select');
-                this.body = el.value;
-                this.updateMetrics();
-                el.focus();
-            },
-            async fetchPreview() {
-                this.tab = 'preview';
-                this.loadingPreview = true;
-                try {
-                    const res = await fetch('{{ route('admin.articles.preview') }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({ body: this.body })
-                    });
-                    const data = await res.json();
-                    this.previewHtml = data.html || '<p class=\"text-text-secondary italic\">Tidak ada konten untuk dipratinjau.</p>';
-                } catch (e) {
-                    this.previewHtml = '<p class=\"text-danger\">Gagal memuat pratinjau markdown server-side.</p>';
-                } finally {
-                    this.loadingPreview = false;
-                }
-            }
-        }"
+        x-data="articleEditor({
+            initialBody: @js(old('body', $article->body)),
+            initialTitle: @js(old('title', $article->title)),
+            initialSlug: @js(old('slug', $article->slug)),
+            previewUrl: '{{ route('admin.articles.preview') }}',
+            csrfToken: '{{ csrf_token() }}'
+        })"
         x-init="updateMetrics()"
     >
         <!-- Header -->
@@ -82,6 +114,8 @@
                             id="title"
                             name="title"
                             type="text"
+                            x-model="title"
+                            @input="onTitleInput()"
                             class="w-full text-xl font-bold font-heading"
                             value="{{ old('title', $article->title) }}"
                             required
@@ -92,15 +126,17 @@
                     <!-- Slug Inline -->
                     <div>
                         <x-input-label for="slug" value="Slug URL" />
-                        <div class="flex items-center">
-                            <span class="font-mono text-sm text-text-secondary px-3 py-2 bg-surface border-y-2 border-l-2 border-ink rounded-l-lg select-none">
+                        <div class="sketch-border sketch-radius-a bg-surface flex items-center min-h-[44px] overflow-hidden focus-within:ring-2 focus-within:ring-accent/20 focus-within:border-ink transition-all shadow-sm">
+                            <span class="font-mono text-sm text-text-secondary px-3.5 bg-bg/60 border-r-2 border-ink select-none shrink-0 self-stretch flex items-center whitespace-nowrap">
                                 /articles/
                             </span>
-                            <x-text-input
+                            <input
                                 id="slug"
                                 name="slug"
                                 type="text"
-                                class="w-full font-mono text-sm rounded-l-none"
+                                x-model="slug"
+                                @input="onSlugInput()"
+                                class="w-full bg-transparent border-0 font-mono text-sm px-3 py-2 text-text placeholder:text-text-secondary focus:ring-0 focus:outline-none"
                                 value="{{ old('slug', $article->slug) }}"
                             />
                         </div>
