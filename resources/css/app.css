@@ -336,3 +336,50 @@ pre.code-block {
 .heading-permalink:hover {
     opacity: 1;
 }
+
+/* Alpine cloak */
+[x-cloak] {
+    display: none !important;
+}
+
+/* Prevent transition flicker/jerking on initial page load */
+.preload,
+.preload *,
+.preload *::before,
+.preload *::after {
+    transition: none !important;
+    animation-duration: 0s !important;
+}
+
+/* Admin Sidebar Collapsed Head-Start */
+html.admin-sidebar-collapsed aside.admin-desktop-sidebar {
+    width: 5rem !important;
+}
+html.admin-sidebar-collapsed aside.admin-desktop-sidebar .sidebar-label {
+    display: none !important;
+}
+html.admin-sidebar-collapsed aside.admin-desktop-sidebar .sidebar-link {
+    justify-content: center !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+}
+html.admin-sidebar-collapsed aside.admin-desktop-sidebar .sidebar-icon {
+    margin-right: 0 !important;
+}
+html.admin-sidebar-collapsed aside.admin-desktop-sidebar .sidebar-brand {
+    display: none !important;
+}
+html.admin-sidebar-collapsed aside.admin-desktop-sidebar .sidebar-header {
+    justify-content: center !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+}
+html.admin-sidebar-collapsed aside.admin-desktop-sidebar .sidebar-user {
+    display: none !important;
+}
+html.admin-sidebar-collapsed aside.admin-desktop-sidebar .sidebar-footer {
+    justify-content: center !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+}
+

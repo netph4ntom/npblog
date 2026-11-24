@@ -93,7 +93,14 @@
     <!-- Scripts & Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-bg text-text min-h-screen flex flex-col paper-texture antialiased selection:bg-accent/30" x-data="{ mobileMenuOpen: false }">
+<body class="preload bg-bg text-text min-h-screen flex flex-col paper-texture antialiased selection:bg-accent/30" x-data="{ mobileMenuOpen: false }">
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            requestAnimationFrame(() => {
+                document.body.classList.remove('preload');
+            });
+        });
+    </script>
     <x-skip-link target="#main-content" />
 
     <!-- Public Header -->
@@ -101,10 +108,10 @@
         x-data="{ isScrolled: false }"
         x-init="isScrolled = window.scrollY > 20"
         @scroll.window.passive="isScrolled = window.scrollY > 20"
-        class="w-full sticky top-0 z-40 transition-all duration-300"
+        class="w-full sticky top-0 z-40 bg-transparent border-b border-transparent transition-colors duration-200"
         :class="isScrolled
-            ? 'bg-bg/95 backdrop-blur-md border-b border-border'
-            : 'bg-transparent border-b border-transparent'"
+            ? 'bg-bg/95 backdrop-blur-md border-border'
+            : 'bg-transparent border-transparent'"
     >
         <div class="max-w-container mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <!-- Brand Logo -->
