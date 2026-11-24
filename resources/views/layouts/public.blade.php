@@ -264,12 +264,12 @@
 
     <!-- Public Footer -->
     <footer class="w-full border-t border-border mt-auto bg-surface/50">
-        <div class="max-w-container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col sm:flex-row items-center justify-between text-sm text-text-secondary font-ui">
-            <p class="mb-4 sm:mb-0">
+        <div class="max-w-container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col items-center justify-center text-center text-sm text-text-secondary font-ui relative">
+            <p>
                 &copy; {{ date('Y') }} Dapit. Hand-drawn minimalism.
             </p>
             @auth
-                <div class="flex items-center space-x-6">
+                <div class="mt-2 sm:mt-0 sm:absolute sm:right-6 lg:right-8 flex items-center">
                     <a href="{{ url('/dashboard') }}" class="hover:text-accent-dark transition-colors min-h-[44px] inline-flex items-center font-bold">Admin</a>
                 </div>
             @endauth
