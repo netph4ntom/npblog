@@ -223,8 +223,9 @@
                 x-transition:leave="transition ease-in duration-100"
                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                 x-transition:leave-end="opacity-0 translate-y-2 scale-95"
-                class="absolute bottom-full mb-2 bg-[#262825] border-2 border-ink text-white rounded-xl shadow-2xl py-2 z-50 overflow-hidden font-ui"
+                class="absolute bottom-full mb-2 admin-user-popover bg-[#262825] border-2 border-ink text-white rounded-xl shadow-2xl py-2 z-50 overflow-hidden font-ui"
                 :class="sidebarCollapsed ? 'left-2 w-56' : 'left-3 right-3'"
+                style="bottom: calc(100% + 0.5rem);"
             >
                 <!-- Popover Header -->
                 <div class="px-4 py-2 border-b border-gray-700/60">

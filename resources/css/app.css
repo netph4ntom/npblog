@@ -383,3 +383,7 @@ html.admin-sidebar-collapsed aside.admin-desktop-sidebar .sidebar-footer {
     padding-right: 0.5rem !important;
 }
 
+.admin-user-popover {
+    bottom: calc(100% + 0.5rem) !important;
+}
+
