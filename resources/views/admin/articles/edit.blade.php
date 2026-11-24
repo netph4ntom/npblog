@@ -3,6 +3,7 @@
         function articleEditor(config = {}) {
             return {
                 tab: 'edit',
+                isFullscreen: false,
                 body: config.initialBody || '',
                 previewHtml: '',
                 loadingPreview: false,
@@ -11,6 +12,9 @@
                 title: config.initialTitle || '',
                 slug: config.initialSlug || '',
                 slugManuallyEdited: Boolean(config.initialSlug),
+                toggleFullscreen() {
+                    this.isFullscreen = !this.isFullscreen;
+                },
                 updateMetrics() {
                     const text = (this.body || '').trim();
                     const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
@@ -224,10 +228,22 @@
                             </div>
                         </div>
 
+                        <!-- Fullscreen Backdrop -->
+                        <div
+                            x-show="isFullscreen"
+                            x-cloak
+                            class="fixed inset-0 bg-ink/75 backdrop-blur-xs z-40 transition-opacity"
+                            @click="isFullscreen = false"
+                        ></div>
+
                         <!-- Editor Tabs & Toolbar Container -->
-                        <div class="bg-surface border-2 border-ink sketch-radius-b sketch-shadow overflow-hidden">
+                        <div
+                            class="bg-surface border-2 border-ink transition-all"
+                            :class="isFullscreen ? 'fixed inset-2 sm:inset-6 z-50 flex flex-col sketch-radius-a shadow-2xl overflow-hidden' : 'sketch-radius-b sketch-shadow overflow-hidden'"
+                            @keydown.escape.window="if (isFullscreen) isFullscreen = false"
+                        >
                             <!-- Header with Tabs and Toolbar -->
-                            <div class="bg-bg border-b-2 border-ink p-2 flex flex-wrap items-center justify-between gap-2">
+                            <div class="bg-bg border-b-2 border-ink p-2 flex flex-wrap items-center justify-between gap-2 shrink-0">
                                 <!-- Mode Switcher (Edit / Preview) -->
                                 <div class="inline-flex rounded-lg border border-ink p-0.5 bg-surface font-ui text-sm">
                                     <button
@@ -254,106 +270,126 @@
                                 </div>
 
                                 <!-- Minimalist Markdown Toolbar (Visible in Edit mode) -->
-                                <div x-show="tab === 'edit'" class="flex items-center space-x-1 font-mono text-sm">
+                                <div class="flex items-center space-x-1 font-mono text-sm">
+                                    <div x-show="tab === 'edit'" class="flex items-center space-x-1">
+                                        <button
+                                            type="button"
+                                            @click="insertToolbar('**', '**', 'teks tebal')"
+                                            title="Tebal (Bold)"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[32px] min-w-[32px]"
+                                        >
+                                            B
+                                        </button>
+                                        <button
+                                            type="button"
+                                            @click="insertToolbar('*', '*', 'teks miring')"
+                                            title="Miring (Italic)"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface italic min-h-[32px] min-w-[32px]"
+                                        >
+                                            I
+                                        </button>
+                                        <button
+                                            type="button"
+                                            @click="insertHeading(1)"
+                                            title="Heading 1"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[32px]"
+                                        >
+                                            H1
+                                        </button>
+                                        <button
+                                            type="button"
+                                            @click="insertHeading(2)"
+                                            title="Heading 2"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[32px]"
+                                        >
+                                            H2
+                                        </button>
+                                        <button
+                                            type="button"
+                                            @click="insertHeading(3)"
+                                            title="Heading 3"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[32px]"
+                                        >
+                                            H3
+                                        </button>
+                                        <button
+                                            type="button"
+                                            @click="insertLink()"
+                                            title="Tautan (Link) [Teks](URL)"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px]"
+                                        >
+                                            Link
+                                        </button>
+                                        <button
+                                            type="button"
+                                            @click="insertCode()"
+                                            title="Kode (Inline / Block)"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px]"
+                                        >
+                                            &lt;/&gt;
+                                        </button>
+                                        <button
+                                            type="button"
+                                            @click="insertToolbar('\n> ', '\n', 'Kutipan...')"
+                                            title="Kutipan (Quote)"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px]"
+                                        >
+                                            &ldquo;
+                                        </button>
+                                        <button
+                                            type="button"
+                                            @click="insertToolbar('\n- ', '\n', 'Item daftar')"
+                                            title="Daftar (List)"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px]"
+                                        >
+                                            &bull; List
+                                        </button>
+                                    </div>
+
+                                    <!-- Separator before Fullscreen -->
+                                    <span class="w-px h-5 bg-border mx-1"></span>
+
+                                    <!-- Fullscreen / Expand Button -->
                                     <button
                                         type="button"
-                                        @click="insertToolbar('**', '**', 'teks tebal')"
-                                        title="Tebal (Bold)"
-                                        class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[32px] min-w-[32px]"
+                                        @click="toggleFullscreen()"
+                                        :title="isFullscreen ? 'Perkecil Editor (Esc)' : 'Perbesar Layar Penuh (Fullscreen)'"
+                                        class="px-2.5 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px] flex items-center space-x-1.5 transition-colors"
+                                        :class="isFullscreen ? 'bg-accent-dark text-on-accent font-bold' : 'text-text hover:text-ink'"
+                                        aria-label="Perbesar layar penuh"
                                     >
-                                        B
-                                    </button>
-                                    <button
-                                        type="button"
-                                        @click="insertToolbar('*', '*', 'teks miring')"
-                                        title="Miring (Italic)"
-                                        class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface italic min-h-[32px] min-w-[32px]"
-                                    >
-                                        I
-                                    </button>
-                                    <button
-                                        type="button"
-                                        @click="insertHeading(1)"
-                                        title="Heading 1"
-                                        class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[32px]"
-                                    >
-                                        H1
-                                    </button>
-                                    <button
-                                        type="button"
-                                        @click="insertHeading(2)"
-                                        title="Heading 2"
-                                        class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[32px]"
-                                    >
-                                        H2
-                                    </button>
-                                    <button
-                                        type="button"
-                                        @click="insertHeading(3)"
-                                        title="Heading 3"
-                                        class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[32px]"
-                                    >
-                                        H3
-                                    </button>
-                                    <button
-                                        type="button"
-                                        @click="insertLink()"
-                                        title="Tautan (Link) [Teks](URL)"
-                                        class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px]"
-                                    >
-                                        Link
-                                    </button>
-                                    <button
-                                        type="button"
-                                        @click="insertCode()"
-                                        title="Kode (Inline / Block)"
-                                        class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px]"
-                                    >
-                                        &lt;/&gt;
-                                    </button>
-                                    <button
-                                        type="button"
-                                        @click="insertToolbar('\n> ', '\n', 'Kutipan...')"
-                                        title="Kutipan (Quote)"
-                                        class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px]"
-                                    >
-                                        &ldquo;
-                                    </button>
-                                    <button
-                                        type="button"
-                                        @click="insertToolbar('\n- ', '\n', 'Item daftar')"
-                                        title="Daftar (List)"
-                                        class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px]"
-                                    >
-                                        &bull; List
+                                        <svg x-show="!isFullscreen" class="w-4 h-4 stroke-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                                        </svg>
+                                        <svg x-show="isFullscreen" x-cloak class="w-4 h-4 stroke-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 9L4 4m0 0h4m-4 0v4m16 5l-5 5m5-5h-4m4 0v4M9 15l-5 5m0 0v-4m0 4h4m11-16l-5 5m5-5v4m0-4h-4" />
+                                        </svg>
+                                        <span class="font-ui text-xs" x-text="isFullscreen ? 'Perkecil' : 'Perbesar'"></span>
                                     </button>
                                 </div>
                             </div>
 
                             <!-- Edit Area -->
-                            <div x-show="tab === 'edit'">
+                            <div x-show="tab === 'edit'" :class="isFullscreen ? 'flex-1 flex flex-col overflow-hidden min-h-0' : ''">
                                 <textarea
                                     id="body"
                                     name="body"
                                     x-ref="bodyTextarea"
                                     x-model="body"
                                     @input="updateMetrics()"
-                                    rows="18"
-                                    class="w-full p-4 font-mono text-sm bg-surface text-text focus:outline-none border-0 resize-y"
+                                    :rows="isFullscreen ? 28 : 18"
+                                    class="w-full p-4 font-mono text-sm bg-surface text-text focus:outline-none border-0"
+                                    :class="isFullscreen ? 'flex-1 h-full resize-none overflow-y-auto' : 'resize-y min-h-[360px]'"
                                     required
                                 >{{ old('body', $article->body) }}</textarea>
-
-                                <div class="px-4 py-2 bg-bg/60 border-t border-border text-xs font-ui text-text-secondary flex items-center justify-between">
-                                    <span>Gunakan format Markdown (Heading #, Code `, Link [text](url)). Klik <strong>Pratinjau Server</strong> di atas untuk melihat tampilan akhirnya.</span>
-                                    <button type="button" @click="fetchPreview()" class="text-accent-dark hover:underline font-bold flex items-center space-x-1">
-                                        <span>Buka Pratinjau</span>
-                                        <span>&rarr;</span>
-                                    </button>
-                                </div>
                             </div>
 
                             <!-- Preview Area -->
-                            <div x-show="tab === 'preview'" class="p-6 bg-surface min-h-[400px] overflow-y-auto">
+                            <div
+                                x-show="tab === 'preview'"
+                                class="p-6 bg-surface overflow-y-auto"
+                                :class="isFullscreen ? 'flex-1 min-h-0' : 'min-h-[400px]'"
+                            >
                                 <template x-if="loadingPreview">
                                     <div class="py-12 text-center text-text-secondary font-ui">
                                         <svg class="animate-spin w-6 h-6 mx-auto mb-2 text-accent-dark" fill="none" viewBox="0 0 24 24">
