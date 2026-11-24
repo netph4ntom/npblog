@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Article;
+use App\Models\Category;
 use App\Models\User;
 use Carbon\Carbon;
 
@@ -98,4 +100,19 @@ test('admin user bottom menu contains profile setting and logout options', funct
         ->assertSee('userMenuOpen', false)
         ->assertSee('Profile Setting', false)
         ->assertSee(route('logout'), false);
+});
+
+test('pagination uses theme tokens and hand-drawn styling without hardcoded gray utilities', function () {
+    $user = User::factory()->create();
+    $category = Category::factory()->create();
+    Article::factory()->count(2)->create([
+        'user_id' => $user->id,
+        'category_id' => $category->id,
+    ]);
+
+    $paginator = Article::paginate(1);
+    $html = (string) $paginator->links();
+
+    expect($html)->toContain('border-ink', 'bg-surface', 'bg-accent-dark', 'text-on-accent')
+        ->and($html)->not->toContain('dark:bg-gray-800', 'dark:bg-gray-700', 'dark:border-gray-600');
 });

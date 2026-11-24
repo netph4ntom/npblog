@@ -2,7 +2,7 @@
 .env.*.local
 backups/
 node_modules/
-vendor/
+/vendor/
 public/build/
 /public/storage
 storage/*.key
