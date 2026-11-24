@@ -88,3 +88,14 @@ test('admin layout sidebar is fixed and supports collapsing to icons', function 
         ->assertSee('sticky top-0 h-screen', false)
         ->assertSee('w-20', false);
 });
+
+test('admin user bottom menu contains profile setting and logout options', function () {
+    $user = User::factory()->create();
+
+    $response = $this->actingAs($user)->get('/dashboard');
+
+    $response->assertStatus(200)
+        ->assertSee('userMenuOpen', false)
+        ->assertSee('Profile Setting', false)
+        ->assertSee(route('logout'), false);
+});
