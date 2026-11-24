@@ -1,12 +1,14 @@
 @props([
     'variant' => 'primary',
     'size' => 'md',
-    'as' => 'button',
+    'as' => null,
     'type' => 'button',
 ])
 
 @php
-$baseClasses = 'inline-flex items-center justify-center font-ui font-normal transition-all sketch-border sketch-shadow sketch-radius-b sketch-btn-press focus-visible:outline-none disabled:opacity-50 disabled:pointer-events-none';
+$isLink = $as === 'a' || ($as === null && $attributes->has('href'));
+
+$baseClasses = 'inline-flex items-center justify-center font-ui font-normal no-underline transition-all sketch-border sketch-shadow sketch-radius-b sketch-btn-press focus-visible:outline-none disabled:opacity-50 disabled:pointer-events-none';
 
 $sizeClasses = match($size) {
     'sm' => 'px-3 py-1.5 text-sm min-h-[38px]',
@@ -24,7 +26,7 @@ $variantClasses = match($variant) {
 $classes = "$baseClasses $sizeClasses $variantClasses";
 @endphp
 
-@if($as === 'a')
+@if($isLink)
     <a {{ $attributes->merge(['class' => $classes]) }}>
         {{ $slot }}
     </a>
@@ -33,4 +35,5 @@ $classes = "$baseClasses $sizeClasses $variantClasses";
         {{ $slot }}
     </button>
 @endif
+
 

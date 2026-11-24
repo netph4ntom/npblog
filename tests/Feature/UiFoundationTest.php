@@ -70,3 +70,9 @@ test('public header is transparent at top and dynamically adapts on scroll', fun
         ->assertSee('bg-transparent', false)
         ->assertSee('bg-bg/95', false);
 });
+
+test('button component automatically renders as anchor when href is provided', function () {
+    $view = $this->blade('<x-button href="/articles" variant="primary">Mulai Membaca</x-button>');
+    expect((string) $view)->toContain('<a ', 'href="/articles"')
+        ->and((string) $view)->not->toContain('<button');
+});
