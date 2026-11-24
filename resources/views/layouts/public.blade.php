@@ -268,13 +268,11 @@
             <p class="mb-4 sm:mb-0">
                 &copy; {{ date('Y') }} Dapit. Hand-drawn minimalism.
             </p>
-            <div class="flex items-center space-x-6">
-                <a href="{{ url('/feed.xml') }}" class="hover:text-accent-dark transition-colors min-h-[44px] inline-flex items-center">RSS Feed</a>
-                <a href="{{ url('/sitemap.xml') }}" class="hover:text-accent-dark transition-colors min-h-[44px] inline-flex items-center">Sitemap</a>
-                @auth
+            @auth
+                <div class="flex items-center space-x-6">
                     <a href="{{ url('/dashboard') }}" class="hover:text-accent-dark transition-colors min-h-[44px] inline-flex items-center font-bold">Admin</a>
-                @endauth
-            </div>
+                </div>
+            @endauth
         </div>
     </footer>
 
