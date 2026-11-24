@@ -165,7 +165,7 @@
                                     </button>
                                     <button
                                         type="button"
-                                        @click="copyToClipboard('{{ $item->url }}', 'URL gambar disalin!')"
+                                        @click="copyToClipboard(new URL('{{ $item->url }}', window.location.origin).href, 'URL gambar disalin!')"
                                         class="px-2 py-1.5 font-ui text-xs font-semibold border border-ink rounded bg-bg hover:bg-surface text-ink transition-colors min-h-[36px]"
                                     >
                                         Salin URL
