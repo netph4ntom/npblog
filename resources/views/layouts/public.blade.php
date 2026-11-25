@@ -152,17 +152,6 @@
                 >
                     About
                 </a>
-                <a
-                    href="{{ url('/search') }}"
-                    class="transition-colors hover:text-accent-dark min-h-[44px] inline-flex items-center {{ request()->is('search') ? 'text-accent-dark font-bold border-b-2 border-ink' : 'text-text-secondary' }}"
-                    {{ request()->is('search') ? 'aria-current="page"' : '' }}
-                    aria-label="Pencarian"
-                >
-                    <svg class="w-5 h-5 mr-1 stroke-current" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                    </svg>
-                    Search
-                </a>
             </nav>
 
             <!-- Action Controls -->
@@ -255,13 +244,6 @@
                         {{ request()->is('about') ? 'aria-current="page"' : '' }}
                     >
                         About
-                    </a>
-                    <a
-                        href="{{ url('/search') }}"
-                        class="px-4 py-3 rounded-lg min-h-[44px] flex items-center {{ request()->is('search') ? 'bg-bg font-bold border-2 border-ink' : 'text-text-secondary' }}"
-                        {{ request()->is('search') ? 'aria-current="page"' : '' }}
-                    >
-                        Search
                     </a>
                 </nav>
             </div>

@@ -243,23 +243,12 @@ test('about page displays settings content', function () {
         ->assertSee('Ini adalah halaman About lengkap tentang Dapit dan misi NPblog.');
 });
 
-test('search page contains noindex robots tag and handles queries', function () {
-    Article::factory()->create([
-        'user_id' => $this->user->id,
-        'title' => 'Pencarian Khusus Arsitektur',
-        'slug' => 'pencarian-khusus-arsitektur',
-        'status' => 'published',
-        'published_at' => now()->subDay(),
-    ]);
-
-    $response = $this->get('/search?q=Arsitektur');
-
-    $response->assertOk()
-        ->assertSee('name="robots" content="noindex', false)
-        ->assertSee('Pencarian Khusus Arsitektur');
+test('public search page is removed and returns 404 without nav link', function () {
+    $this->get('/')->assertOk()->assertDontSee(url('/search'), false);
+    $this->get('/search')->assertNotFound();
 });
 
-test('search page handles short queries under 3 characters', function () {
+test('articles index search handles short queries under 3 characters', function () {
     Article::factory()->create([
         'user_id' => $this->user->id,
         'title' => 'Belajar Bahasa Go Pemula',
@@ -268,7 +257,7 @@ test('search page handles short queries under 3 characters', function () {
         'published_at' => now()->subDay(),
     ]);
 
-    $response = $this->get('/search?q=Go');
+    $response = $this->get('/articles?q=Go');
 
     $response->assertOk()
         ->assertSee('Belajar Bahasa Go Pemula');

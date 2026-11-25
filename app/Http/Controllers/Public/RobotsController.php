@@ -20,7 +20,6 @@ class RobotsController extends Controller
             'User-agent: *',
             'Disallow: /admin/',
             'Disallow: /login',
-            'Disallow: /search',
             'Disallow: /profile',
             '',
             "Sitemap: {$sitemapUrl}",

@@ -10,7 +10,6 @@ use App\Http\Controllers\Public\AboutController;
 use App\Http\Controllers\Public\ArticleController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\RobotsController;
-use App\Http\Controllers\Public\SearchController;
 use App\Http\Controllers\Public\SitemapController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,7 +22,6 @@ Route::get('/', HomeController::class)->name('home');
 Route::get('/articles', [ArticleController::class, 'index'])->name('articles.index');
 Route::get('/articles/{slug}', [ArticleController::class, 'show'])->name('articles.show');
 Route::get('/about', AboutController::class)->name('about');
-Route::get('/search', SearchController::class)->name('search');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 Route::get('/robots.txt', RobotsController::class)->name('robots');
 

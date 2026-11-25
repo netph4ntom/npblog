@@ -158,10 +158,10 @@ test('XSS payloads in media alt text are escaped when rendered in image tags', f
     $response->assertSee(e($xssAlt), false);
 });
 
-test('XSS payloads in search queries are escaped in search view', function () {
+test('XSS payloads in search queries are escaped in articles view', function () {
     $xssQuery = '<script>alert("xss-search")</script>';
 
-    $response = $this->get('/search?q='.urlencode($xssQuery));
+    $response = $this->get('/articles?q='.urlencode($xssQuery));
 
     $response->assertOk();
     $response->assertDontSee('<script>alert("xss-search")</script>', false);
@@ -182,9 +182,6 @@ test('SQL injection attempts in search parameters execute safely without error',
     ];
 
     foreach ($injections as $payload) {
-        $resPublicSearch = $this->get('/search?q='.urlencode($payload));
-        $resPublicSearch->assertOk();
-
         $resArticleIndex = $this->get('/articles?q='.urlencode($payload));
         $resArticleIndex->assertOk();
 

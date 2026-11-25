@@ -141,7 +141,7 @@ test('sitemap.xml returns published articles and excludes drafts or future sched
     $response->assertDontSee($scheduled->slug);
 });
 
-test('robots.txt disallows admin, login, search, profile, and references sitemap', function () {
+test('robots.txt disallows admin, login, profile, and references sitemap', function () {
     $response = $this->get('/robots.txt');
 
     $response->assertOk();
@@ -150,7 +150,7 @@ test('robots.txt disallows admin, login, search, profile, and references sitemap
     $response->assertSee('User-agent: *', false)
         ->assertSee('Disallow: /admin/', false)
         ->assertSee('Disallow: /login', false)
-        ->assertSee('Disallow: /search', false)
+        ->assertDontSee('Disallow: /search', false)
         ->assertSee('Disallow: /profile', false)
         ->assertSee('Sitemap: '.route('sitemap'), false);
 });
