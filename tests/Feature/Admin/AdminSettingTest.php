@@ -136,3 +136,123 @@ test('settings validation rejects empty blog name or invalid email', function ()
 
     $response->assertSessionHasErrors(['blog_name', 'contact_email']);
 });
+
+test('json-like text in settings does not crash settings page or public layout', function () {
+    $this->actingAs($this->admin)->put('/admin/settings', [
+        'blog_name' => '{"evil":true}',
+        'blog_tagline' => '[1, 2, 3]',
+        'seo_default_title' => '{"title":"test"}',
+    ])->assertRedirect('/admin/settings');
+
+    $this->actingAs($this->admin)->get('/admin/settings')
+        ->assertOk()
+        ->assertSee('{"evil":true}', true);
+
+    $this->get('/')
+        ->assertOk()
+        ->assertSee('{"evil":true}', true);
+});
+
+test('invalid image upload in settings returns validation error without HTTP 500 or deleting existing image', function () {
+    $validLogo = UploadedFile::fake()->image('existing-logo.png', 200, 80);
+    $this->actingAs($this->admin)->put('/admin/settings', [
+        'blog_name' => 'NPblog',
+        'logo' => $validLogo,
+    ])->assertRedirect('/admin/settings');
+
+    $oldMedia = Media::where('alt_text', 'Logo Blog')->firstOrFail();
+    $oldLogoUrl = Setting::get('logo');
+
+    $dangerousLogo = UploadedFile::fake()->image('exploit.php.png', 200, 80);
+    $response = $this->actingAs($this->admin)->from('/admin/settings')->put('/admin/settings', [
+        'blog_name' => 'NPblog Berubah',
+        'logo' => $dangerousLogo,
+    ]);
+
+    $response->assertRedirect('/admin/settings')
+        ->assertSessionHasErrors(['logo']);
+
+    expect(Setting::get('logo'))->toBe($oldLogoUrl)
+        ->and(Media::find($oldMedia->id))->not->toBeNull();
+    Storage::disk('public')->assertExists($oldMedia->path);
+});
+
+test('favicon upload uses randomized filename, converts raster to webp, and rejects dangerous files', function () {
+    $pngFavicon = UploadedFile::fake()->image('icon.png', 64, 64);
+
+    $this->actingAs($this->admin)->put('/admin/settings', [
+        'blog_name' => 'NPblog',
+        'favicon' => $pngFavicon,
+    ])->assertRedirect('/admin/settings');
+
+    $faviconUrl = (string) Setting::get('favicon');
+    expect($faviconUrl)->toContain('/storage/media/')
+        ->and($faviconUrl)->not->toContain('/favicon.png')
+        ->and($faviconUrl)->toEndWith('.webp');
+
+    $cleanPath = ltrim((string) preg_replace('#^.*?/storage/#', '', $faviconUrl), '/');
+    Storage::disk('public')->assertExists($cleanPath);
+
+    $fakeIco = UploadedFile::fake()->createWithContent('bad.ico', '<?php phpinfo(); ?>');
+    $this->actingAs($this->admin)->from('/admin/settings')->put('/admin/settings', [
+        'blog_name' => 'NPblog',
+        'favicon' => $fakeIco,
+    ])->assertRedirect('/admin/settings')
+        ->assertSessionHasErrors(['favicon']);
+});
+
+test('media referenced by settings cannot be deleted from media gallery', function () {
+    $logoFile = UploadedFile::fake()->image('brand.png', 200, 100);
+
+    $this->actingAs($this->admin)->put('/admin/settings', [
+        'blog_name' => 'NPblog',
+        'logo' => $logoFile,
+    ])->assertRedirect('/admin/settings');
+
+    $media = Media::where('alt_text', 'Logo Blog')->firstOrFail();
+
+    $this->actingAs($this->admin)->delete("/admin/media/{$media->id}")
+        ->assertRedirect()
+        ->assertSessionHas('error');
+
+    expect(Media::find($media->id))->not->toBeNull();
+    Storage::disk('public')->assertExists($media->path);
+});
+
+test('settings validation rejects unsafe or invalid social links and renders field errors', function () {
+    $response = $this->actingAs($this->admin)
+        ->followingRedirects()
+        ->from('/admin/settings')
+        ->put('/admin/settings', [
+            'blog_name' => 'NPblog',
+            'social_links' => [
+                'github' => 'javascript:alert(1)',
+                'twitter' => 'not-a-valid-url',
+            ],
+        ]);
+
+    $response->assertOk()
+        ->assertSee('text-danger', false);
+
+    $rawErrors = $this->actingAs($this->admin)
+        ->from('/admin/settings')
+        ->put('/admin/settings', [
+            'blog_name' => 'NPblog',
+            'social_links' => [
+                'github' => 'javascript:alert(1)',
+            ],
+        ]);
+    $rawErrors->assertSessionHasErrors(['social_links.github']);
+});
+
+test('settings form uses theme focus tokens and accessible remove controls', function () {
+    Setting::set('logo', '/storage/media/sample-logo.webp');
+
+    $response = $this->actingAs($this->admin)->get('/admin/settings');
+
+    $response->assertOk()
+        ->assertSee('focus:border-ink focus:ring-0', false)
+        ->assertSee('min-h-[44px]', false)
+        ->assertDontSee('text-gray-700 dark:text-gray-300', false)
+        ->assertDontSee('text-red-600 dark:text-red-400', false);
+});

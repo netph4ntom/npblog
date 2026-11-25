@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Category;
 use App\Models\Redirect;
+use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -36,7 +37,8 @@ class ArticleController extends Controller
             $query = $query->search($search);
         }
 
-        $articles = $query->paginate(9)->withQueryString();
+        $perPage = max(1, min(50, (int) Setting::get('posts_per_page', 9)));
+        $articles = $query->paginate($perPage)->withQueryString();
 
         $categories = Category::query()
             ->withCount(['articles' => function ($q) {

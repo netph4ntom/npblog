@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\Article;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -21,11 +22,12 @@ class SearchController extends Controller
 
         $articles = null;
         if ($searchTerm !== '') {
+            $perPage = max(1, min(50, (int) Setting::get('posts_per_page', 9)));
             $articles = Article::published()
                 ->with(['category', 'tags', 'featuredMedia'])
                 ->search($searchTerm)
                 ->latest('published_at')
-                ->paginate(9)
+                ->paginate($perPage)
                 ->withQueryString();
         }
 

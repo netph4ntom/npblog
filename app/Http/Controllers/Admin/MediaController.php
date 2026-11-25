@@ -108,6 +108,10 @@ class MediaController extends Controller
             return redirect()->back()->with('error', "Media tidak dapat dihapus karena masih digunakan sebagai gambar utama oleh {$articlesCount} artikel.");
         }
 
+        if ($media->isUsedInSettings()) {
+            return redirect()->back()->with('error', 'Media tidak dapat dihapus karena sedang digunakan pada pengaturan blog.');
+        }
+
         $media->delete();
 
         return redirect()->route('admin.media.index')->with('success', 'Media dan file terkait berhasil dihapus.');

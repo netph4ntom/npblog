@@ -143,6 +143,21 @@ test('setting helper can get and set strings and json arrays', function () {
     expect(Setting::get('non_existent', 'default_val'))->toBe('default_val');
 });
 
+test('setting helper preserves json-like, boolean-like, and numeric strings without type corruption', function () {
+    Setting::set('json_string', '{"a":1}');
+    Setting::set('array_string', '[1,2]');
+    Setting::set('null_string', 'null');
+    Setting::set('bool_string', 'true');
+    Setting::set('empty_string', '');
+
+    expect(Setting::get('json_string'))->toBe('{"a":1}')
+        ->and(Setting::get('array_string'))->toBe('[1,2]')
+        ->and(Setting::get('null_string'))->toBe('null')
+        ->and(Setting::get('bool_string'))->toBe('true')
+        ->and(Setting::getString('empty_string', 'fallback'))->toBe('fallback')
+        ->and(Setting::getString('json_string', 'fallback'))->toBe('{"a":1}');
+});
+
 test('database seeder seeds 1 admin, 4 categories, and 12 articles', function () {
     $this->seed(DatabaseSeeder::class);
 

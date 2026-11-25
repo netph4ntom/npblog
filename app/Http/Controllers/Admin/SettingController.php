@@ -18,25 +18,43 @@ use Illuminate\View\View;
 class SettingController extends Controller
 {
     /**
+     * Media upload keys mapped to default alt texts.
+     *
+     * @var array<string, string>
+     */
+    protected const array MEDIA_UPLOAD_SLOTS = [
+        'logo' => 'Logo Blog',
+        'hero_image' => 'Hero Banner Blog',
+        'profile_image' => 'Foto Profil Penulis',
+    ];
+
+    /**
      * Show the form for editing blog settings.
      */
     public function edit(): View
     {
+        $rawSocial = Setting::get('social_links', []);
+        $stringSetting = static function (string $key, string $default): string {
+            $val = Setting::get($key, $default);
+
+            return is_scalar($val) ? (string) $val : $default;
+        };
+
         $settings = [
-            'blog_name' => Setting::get('blog_name', 'NPblog'),
-            'blog_tagline' => Setting::get('blog_tagline', 'Catatan Kode & Arsitektur Minimalis'),
-            'blog_description' => Setting::get('blog_description', 'Blog personal minimalis bergaya hand-drawn oleh Dapit.'),
-            'logo' => Setting::get('logo', ''),
-            'favicon' => Setting::get('favicon', ''),
-            'hero_image' => Setting::get('hero_image', ''),
-            'author_name' => Setting::get('author_name', 'Dapit'),
-            'author_bio' => Setting::get('author_bio', 'Software engineer yang menyukai kesederhanaan dan desain hand-drawn.'),
-            'profile_image' => Setting::get('profile_image', ''),
-            'contact_email' => Setting::get('contact_email', ''),
-            'social_links' => (array) Setting::get('social_links', []),
-            'about_content' => Setting::get('about_content', "Selamat datang di NPblog. Blog personal minimalis dengan sentuhan sketsa hand-drawn.\n\nDitulis oleh Dapit."),
-            'seo_default_title' => Setting::get('seo_default_title', 'NPblog — Catatan Dapit'),
-            'seo_default_description' => Setting::get('seo_default_description', 'Blog personal minimalis bergaya hand-drawn oleh Dapit.'),
+            'blog_name' => $stringSetting('blog_name', 'NPblog'),
+            'blog_tagline' => $stringSetting('blog_tagline', 'Catatan Kode & Arsitektur Minimalis'),
+            'blog_description' => $stringSetting('blog_description', 'Blog personal minimalis bergaya hand-drawn oleh Dapit.'),
+            'logo' => $stringSetting('logo', ''),
+            'favicon' => $stringSetting('favicon', ''),
+            'hero_image' => $stringSetting('hero_image', ''),
+            'author_name' => $stringSetting('author_name', 'Dapit'),
+            'author_bio' => $stringSetting('author_bio', 'Software engineer yang menyukai kesederhanaan dan desain hand-drawn.'),
+            'profile_image' => $stringSetting('profile_image', ''),
+            'contact_email' => $stringSetting('contact_email', ''),
+            'social_links' => is_array($rawSocial) ? $rawSocial : [],
+            'about_content' => $stringSetting('about_content', "Selamat datang di NPblog. Blog personal minimalis dengan sentuhan sketsa hand-drawn.\n\nDitulis oleh Dapit."),
+            'seo_default_title' => $stringSetting('seo_default_title', 'NPblog — Catatan Dapit'),
+            'seo_default_description' => $stringSetting('seo_default_description', 'Blog personal minimalis bergaya hand-drawn oleh Dapit.'),
         ];
 
         return view('admin.settings.edit', compact('settings'));
@@ -50,7 +68,51 @@ class SettingController extends Controller
         /** @var User $user */
         $user = $request->user();
 
-        // 1. Update text/string settings
+        // 1. Process all uploaded files first before mutating existing settings/files
+        $stagedUrls = [];
+        /** @var list<Media> $stagedMediaModels */
+        $stagedMediaModels = [];
+        /** @var list<string> $stagedFaviconPaths */
+        $stagedFaviconPaths = [];
+        $currentField = 'logo';
+
+        try {
+            foreach (self::MEDIA_UPLOAD_SLOTS as $key => $altText) {
+                if ($request->hasFile($key)) {
+                    $currentField = $key;
+                    /** @var UploadedFile $file */
+                    $file = $request->file($key);
+                    $media = $mediaProcessor->process($file, $user, $altText);
+                    $stagedMediaModels[] = $media;
+                    $stagedUrls[$key] = $media->url;
+                }
+            }
+
+            if ($request->hasFile('favicon')) {
+                $currentField = 'favicon';
+                /** @var UploadedFile $favFile */
+                $favFile = $request->file('favicon');
+                $favUrl = $mediaProcessor->processFavicon($favFile);
+                $favPath = Setting::extractStoragePath($favUrl);
+                if ($favPath !== null) {
+                    $stagedFaviconPaths[] = $favPath;
+                }
+                $stagedUrls['favicon'] = $favUrl;
+            }
+        } catch (\InvalidArgumentException $e) {
+            foreach ($stagedMediaModels as $media) {
+                $media->delete();
+            }
+            foreach ($stagedFaviconPaths as $path) {
+                if (Storage::disk('public')->exists($path)) {
+                    Storage::disk('public')->delete($path);
+                }
+            }
+
+            return back()->withInput()->withErrors([$currentField => $e->getMessage()]);
+        }
+
+        // 2. Persist text/string settings
         $textKeys = [
             'blog_name',
             'blog_tagline',
@@ -70,65 +132,26 @@ class SettingController extends Controller
             }
         }
 
-        // 2. Handle image removals
-        if ($request->boolean('remove_logo')) {
-            $this->deleteSettingMedia((string) Setting::get('logo'));
-            Setting::set('logo', '');
-        }
-        if ($request->boolean('remove_favicon')) {
-            $this->deleteSettingMedia((string) Setting::get('favicon'));
-            Setting::set('favicon', '');
-        }
-        if ($request->boolean('remove_hero_image')) {
-            $this->deleteSettingMedia((string) Setting::get('hero_image'));
-            Setting::set('hero_image', '');
-        }
-        if ($request->boolean('remove_profile_image')) {
-            $this->deleteSettingMedia((string) Setting::get('profile_image'));
-            Setting::set('profile_image', '');
+        // 3. Apply new media URLs or removals and clean up replaced/removed files
+        $allImageKeys = array_merge(array_keys(self::MEDIA_UPLOAD_SLOTS), ['favicon']);
+        foreach ($allImageKeys as $key) {
+            if (isset($stagedUrls[$key])) {
+                $this->deleteSettingMedia((string) Setting::get($key));
+                Setting::set($key, $stagedUrls[$key]);
+            } elseif ($request->boolean("remove_{$key}")) {
+                $this->deleteSettingMedia((string) Setting::get($key));
+                Setting::set($key, '');
+            }
         }
 
-        // 3. Handle image uploads via MediaProcessor
-        if ($request->hasFile('logo')) {
-            $this->deleteSettingMedia((string) Setting::get('logo'));
-            /** @var UploadedFile $logoFile */
-            $logoFile = $request->file('logo');
-            $media = $mediaProcessor->process($logoFile, $user, 'Logo Blog');
-            Setting::set('logo', $media->url);
-        }
-
-        if ($request->hasFile('hero_image')) {
-            $this->deleteSettingMedia((string) Setting::get('hero_image'));
-            /** @var UploadedFile $heroFile */
-            $heroFile = $request->file('hero_image');
-            $media = $mediaProcessor->process($heroFile, $user, 'Hero Banner Blog');
-            Setting::set('hero_image', $media->url);
-        }
-
-        if ($request->hasFile('profile_image')) {
-            $this->deleteSettingMedia((string) Setting::get('profile_image'));
-            /** @var UploadedFile $profileFile */
-            $profileFile = $request->file('profile_image');
-            $media = $mediaProcessor->process($profileFile, $user, 'Foto Profil Penulis');
-            Setting::set('profile_image', $media->url);
-        }
-
-        if ($request->hasFile('favicon')) {
-            $this->deleteSettingMedia((string) Setting::get('favicon'));
-            /** @var UploadedFile $favFile */
-            $favFile = $request->file('favicon');
-            $ext = $favFile->getClientOriginalExtension() ?: 'ico';
-            $path = $favFile->storeAs('media', 'favicon.'.$ext, 'public');
-            Setting::set('favicon', Storage::disk('public')->url($path));
-        }
-
-        // 4. Handle social links array
+        // 4. Persist whitelisted social links array
         if ($request->has('social_links')) {
             $rawSocial = (array) $request->input('social_links', []);
             $socialLinks = [];
-            foreach ($rawSocial as $network => $url) {
+            foreach (array_keys(Setting::SOCIAL_PLATFORMS) as $network) {
+                $url = $rawSocial[$network] ?? null;
                 if (is_string($url) && trim($url) !== '') {
-                    $socialLinks[(string) $network] = trim($url);
+                    $socialLinks[$network] = trim($url);
                 }
             }
             Setting::set('social_links', $socialLinks);
@@ -142,12 +165,8 @@ class SettingController extends Controller
      */
     protected function deleteSettingMedia(?string $url): void
     {
-        if (empty($url)) {
-            return;
-        }
-
-        $cleanPath = ltrim(preg_replace('#^.*?/storage/#', '', $url) ?? '', '/');
-        if ($cleanPath === '') {
+        $cleanPath = Setting::extractStoragePath($url);
+        if ($cleanPath === null) {
             return;
         }
 

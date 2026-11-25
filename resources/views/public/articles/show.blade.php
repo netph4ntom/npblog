@@ -76,14 +76,26 @@
         @endif
 
         <!-- Author Footer Card -->
+        @php
+            $authorProfileImage = \App\Models\Setting::getString('profile_image');
+            $authorFooterBio = \App\Models\Setting::getString('author_bio', 'Penulis di NPblog. Berbagi catatan teknis, rekayasa kode, dan arsitektur web.');
+        @endphp
         <div class="pt-6">
             <x-sketch-box variant="a" class="p-6 bg-surface flex items-center gap-5">
-                <div class="w-16 h-16 rounded-full border-2 border-ink flex items-center justify-center bg-accent/20 text-ink font-heading text-3xl font-bold shrink-0">
-                    {{ substr($article->user->name ?? 'D', 0, 1) }}
-                </div>
+                @if($authorProfileImage !== '')
+                    <img
+                        src="{{ $authorProfileImage }}"
+                        alt="{{ $article->user->name ?? 'Dapit' }}"
+                        class="w-16 h-16 rounded-full border-2 border-ink object-cover shrink-0"
+                    />
+                @else
+                    <div class="w-16 h-16 rounded-full border-2 border-ink flex items-center justify-center bg-accent/20 text-ink font-heading text-3xl font-bold shrink-0">
+                        {{ substr($article->user->name ?? 'D', 0, 1) }}
+                    </div>
+                @endif
                 <div class="space-y-1">
                     <h3 class="font-heading text-2xl font-bold text-ink">{{ $article->user->name ?? 'Dapit' }}</h3>
-                    <p class="font-ui text-sm text-text-secondary">Penulis di NPblog. Berbagi catatan teknis, rekayasa kode, dan arsitektur web.</p>
+                    <p class="font-ui text-sm text-text-secondary">{{ $authorFooterBio }}</p>
                 </div>
             </x-sketch-box>
         </div>

@@ -8,6 +8,13 @@
 
     <title>{{ isset($title) ? $title . ' — Admin NPblog' : 'Admin NPblog' }}</title>
 
+    @php
+        $faviconUrl = \App\Models\Setting::getString('favicon');
+    @endphp
+    @if($faviconUrl !== '')
+        <link rel="icon" href="{{ $faviconUrl }}">
+    @endif
+
     <!-- Theme and sidebar collapsed state without flash -->
     <script>
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {

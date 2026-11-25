@@ -52,7 +52,7 @@
                         id="blog_description"
                         name="blog_description"
                         rows="3"
-                        class="sketch-border sketch-radius-a bg-surface text-text font-body p-3 w-full"
+                        class="sketch-border sketch-radius-a bg-surface text-text font-body p-3 w-full focus:border-ink focus:ring-0"
                     >{{ old('blog_description', $settings['blog_description']) }}</textarea>
                     <x-input-error :messages="$errors->get('blog_description')" class="mt-1" />
                 </div>
@@ -63,10 +63,16 @@
                     <div class="space-y-3">
                         <x-input-label for="logo" value="Logo Blog" />
                         @if(!empty($settings['logo']))
-                            <div class="p-2 border border-ink rounded bg-bg flex items-center justify-between">
+                            <div class="p-2 border border-ink rounded bg-bg flex items-center justify-between gap-2">
                                 <img src="{{ $settings['logo'] }}" alt="Logo saat ini" class="max-h-12 object-contain" />
-                                <label class="flex items-center space-x-1.5 text-xs text-danger font-ui cursor-pointer">
-                                    <input type="checkbox" name="remove_logo" value="1" class="rounded border-ink text-danger" />
+                                <label class="inline-flex items-center space-x-1.5 text-xs text-danger font-ui cursor-pointer min-h-[44px] px-2">
+                                    <input
+                                        type="checkbox"
+                                        name="remove_logo"
+                                        value="1"
+                                        @checked((bool) old('remove_logo'))
+                                        class="rounded border-ink bg-surface text-danger focus:ring-0 focus:ring-offset-0"
+                                    />
                                     <span>Hapus</span>
                                 </label>
                             </div>
@@ -76,7 +82,7 @@
                             id="logo"
                             name="logo"
                             accept="image/jpeg,image/png,image/webp"
-                            class="w-full text-xs font-ui text-text file:mr-2 file:py-1.5 file:px-2.5 file:rounded file:border file:border-ink file:text-xs file:bg-bg file:cursor-pointer"
+                            class="w-full text-xs font-ui text-text file:mr-2 file:py-1.5 file:px-2.5 file:rounded file:border file:border-ink file:text-xs file:text-ink file:bg-bg file:cursor-pointer"
                         />
                         <x-input-error :messages="$errors->get('logo')" class="mt-1" />
                     </div>
@@ -85,10 +91,16 @@
                     <div class="space-y-3">
                         <x-input-label for="favicon" value="Favicon" />
                         @if(!empty($settings['favicon']))
-                            <div class="p-2 border border-ink rounded bg-bg flex items-center justify-between">
+                            <div class="p-2 border border-ink rounded bg-bg flex items-center justify-between gap-2">
                                 <img src="{{ $settings['favicon'] }}" alt="Favicon saat ini" class="w-8 h-8 object-contain" />
-                                <label class="flex items-center space-x-1.5 text-xs text-danger font-ui cursor-pointer">
-                                    <input type="checkbox" name="remove_favicon" value="1" class="rounded border-ink text-danger" />
+                                <label class="inline-flex items-center space-x-1.5 text-xs text-danger font-ui cursor-pointer min-h-[44px] px-2">
+                                    <input
+                                        type="checkbox"
+                                        name="remove_favicon"
+                                        value="1"
+                                        @checked((bool) old('remove_favicon'))
+                                        class="rounded border-ink bg-surface text-danger focus:ring-0 focus:ring-offset-0"
+                                    />
                                     <span>Hapus</span>
                                 </label>
                             </div>
@@ -97,8 +109,8 @@
                             type="file"
                             id="favicon"
                             name="favicon"
-                            accept=".ico,image/png,image/webp,image/x-icon"
-                            class="w-full text-xs font-ui text-text file:mr-2 file:py-1.5 file:px-2.5 file:rounded file:border file:border-ink file:text-xs file:bg-bg file:cursor-pointer"
+                            accept=".ico,image/png,image/webp,image/jpeg,image/x-icon"
+                            class="w-full text-xs font-ui text-text file:mr-2 file:py-1.5 file:px-2.5 file:rounded file:border file:border-ink file:text-xs file:text-ink file:bg-bg file:cursor-pointer"
                         />
                         <x-input-error :messages="$errors->get('favicon')" class="mt-1" />
                     </div>
@@ -107,10 +119,16 @@
                     <div class="space-y-3">
                         <x-input-label for="hero_image" value="Hero Banner" />
                         @if(!empty($settings['hero_image']))
-                            <div class="p-2 border border-ink rounded bg-bg flex items-center justify-between">
+                            <div class="p-2 border border-ink rounded bg-bg flex items-center justify-between gap-2">
                                 <img src="{{ $settings['hero_image'] }}" alt="Hero saat ini" class="max-h-12 w-24 object-cover rounded" />
-                                <label class="flex items-center space-x-1.5 text-xs text-danger font-ui cursor-pointer">
-                                    <input type="checkbox" name="remove_hero_image" value="1" class="rounded border-ink text-danger" />
+                                <label class="inline-flex items-center space-x-1.5 text-xs text-danger font-ui cursor-pointer min-h-[44px] px-2">
+                                    <input
+                                        type="checkbox"
+                                        name="remove_hero_image"
+                                        value="1"
+                                        @checked((bool) old('remove_hero_image'))
+                                        class="rounded border-ink bg-surface text-danger focus:ring-0 focus:ring-offset-0"
+                                    />
                                     <span>Hapus</span>
                                 </label>
                             </div>
@@ -120,7 +138,7 @@
                             id="hero_image"
                             name="hero_image"
                             accept="image/jpeg,image/png,image/webp"
-                            class="w-full text-xs font-ui text-text file:mr-2 file:py-1.5 file:px-2.5 file:rounded file:border file:border-ink file:text-xs file:bg-bg file:cursor-pointer"
+                            class="w-full text-xs font-ui text-text file:mr-2 file:py-1.5 file:px-2.5 file:rounded file:border file:border-ink file:text-xs file:text-ink file:bg-bg file:cursor-pointer"
                         />
                         <x-input-error :messages="$errors->get('hero_image')" class="mt-1" />
                     </div>
@@ -131,7 +149,7 @@
             <x-sketch-box variant="b" class="p-6 bg-surface space-y-6">
                 <div class="pb-3 border-b border-border">
                     <h2 class="font-heading text-2xl font-bold text-ink">Profil Penulis & Kontak</h2>
-                    <p class="font-ui text-sm text-text-secondary">Informasi pemilik blog yang ditampilkan pada header dan footer.</p>
+                    <p class="font-ui text-sm text-text-secondary">Informasi pemilik blog yang ditampilkan pada halaman Beranda, About, dan footer.</p>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -166,7 +184,7 @@
                         id="author_bio"
                         name="author_bio"
                         rows="3"
-                        class="sketch-border sketch-radius-a bg-surface text-text font-body p-3 w-full"
+                        class="sketch-border sketch-radius-a bg-surface text-text font-body p-3 w-full focus:border-ink focus:ring-0"
                     >{{ old('author_bio', $settings['author_bio']) }}</textarea>
                     <x-input-error :messages="$errors->get('author_bio')" class="mt-1" />
                 </div>
@@ -177,8 +195,14 @@
                     @if(!empty($settings['profile_image']))
                         <div class="mb-3 p-2 border border-ink rounded bg-bg inline-flex items-center space-x-3">
                             <img src="{{ $settings['profile_image'] }}" alt="Foto profil saat ini" class="w-12 h-12 rounded-full object-cover border border-ink" />
-                            <label class="flex items-center space-x-1.5 text-xs text-danger font-ui cursor-pointer">
-                                <input type="checkbox" name="remove_profile_image" value="1" class="rounded border-ink text-danger" />
+                            <label class="inline-flex items-center space-x-1.5 text-xs text-danger font-ui cursor-pointer min-h-[44px] px-2">
+                                <input
+                                    type="checkbox"
+                                    name="remove_profile_image"
+                                    value="1"
+                                    @checked((bool) old('remove_profile_image'))
+                                    class="rounded border-ink bg-surface text-danger focus:ring-0 focus:ring-offset-0"
+                                />
                                 <span>Hapus Foto</span>
                             </label>
                         </div>
@@ -188,7 +212,7 @@
                         id="profile_image"
                         name="profile_image"
                         accept="image/jpeg,image/png,image/webp"
-                        class="block w-full max-w-sm text-xs font-ui text-text file:mr-2 file:py-1.5 file:px-2.5 file:rounded file:border file:border-ink file:text-xs file:bg-bg file:cursor-pointer"
+                        class="block w-full max-w-sm text-xs font-ui text-text file:mr-2 file:py-1.5 file:px-2.5 file:rounded file:border file:border-ink file:text-xs file:text-ink file:bg-bg file:cursor-pointer"
                     />
                     <x-input-error :messages="$errors->get('profile_image')" class="mt-1" />
                 </div>
@@ -198,65 +222,36 @@
             <x-sketch-box variant="c" class="p-6 bg-surface space-y-6">
                 <div class="pb-3 border-b border-border">
                     <h2 class="font-heading text-2xl font-bold text-ink">Tautan Media Sosial</h2>
-                    <p class="font-ui text-sm text-text-secondary">Tautan profil yang ditampilkan pada halaman About dan footer situs.</p>
+                    <p class="font-ui text-sm text-text-secondary">Tautan profil (https://...) yang ditampilkan pada halaman About dan footer situs.</p>
                 </div>
 
+                <x-input-error :messages="$errors->get('social_links')" class="mt-1" />
+
+                @php
+                    $socialFields = [
+                        'github' => ['id' => 'social_github', 'label' => 'GitHub URL', 'placeholder' => 'https://github.com/username', 'colSpan' => ''],
+                        'twitter' => ['id' => 'social_twitter', 'label' => 'X / Twitter URL', 'placeholder' => 'https://x.com/username', 'colSpan' => ''],
+                        'linkedin' => ['id' => 'social_linkedin', 'label' => 'LinkedIn URL', 'placeholder' => 'https://linkedin.com/in/username', 'colSpan' => ''],
+                        'youtube' => ['id' => 'social_youtube', 'label' => 'YouTube URL', 'placeholder' => 'https://youtube.com/@username', 'colSpan' => ''],
+                        'website' => ['id' => 'social_website', 'label' => 'Situs Web Personal', 'placeholder' => 'https://domainanda.com', 'colSpan' => 'sm:col-span-2'],
+                    ];
+                @endphp
+
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                    <div>
-                        <x-input-label for="social_github" value="GitHub URL" />
-                        <x-text-input
-                            id="social_github"
-                            name="social_links[github]"
-                            type="url"
-                            class="w-full text-sm font-mono"
-                            placeholder="https://github.com/username"
-                            value="{{ old('social_links.github', $settings['social_links']['github'] ?? '') }}"
-                        />
-                    </div>
-                    <div>
-                        <x-input-label for="social_twitter" value="X / Twitter URL" />
-                        <x-text-input
-                            id="social_twitter"
-                            name="social_links[twitter]"
-                            type="url"
-                            class="w-full text-sm font-mono"
-                            placeholder="https://x.com/username"
-                            value="{{ old('social_links.twitter', $settings['social_links']['twitter'] ?? '') }}"
-                        />
-                    </div>
-                    <div>
-                        <x-input-label for="social_linkedin" value="LinkedIn URL" />
-                        <x-text-input
-                            id="social_linkedin"
-                            name="social_links[linkedin]"
-                            type="url"
-                            class="w-full text-sm font-mono"
-                            placeholder="https://linkedin.com/in/username"
-                            value="{{ old('social_links.linkedin', $settings['social_links']['linkedin'] ?? '') }}"
-                        />
-                    </div>
-                    <div>
-                        <x-input-label for="social_youtube" value="YouTube URL" />
-                        <x-text-input
-                            id="social_youtube"
-                            name="social_links[youtube]"
-                            type="url"
-                            class="w-full text-sm font-mono"
-                            placeholder="https://youtube.com/@username"
-                            value="{{ old('social_links.youtube', $settings['social_links']['youtube'] ?? '') }}"
-                        />
-                    </div>
-                    <div class="sm:col-span-2">
-                        <x-input-label for="social_website" value="Situs Web Personal" />
-                        <x-text-input
-                            id="social_website"
-                            name="social_links[website]"
-                            type="url"
-                            class="w-full text-sm font-mono"
-                            placeholder="https://domainanda.com"
-                            value="{{ old('social_links.website', $settings['social_links']['website'] ?? '') }}"
-                        />
-                    </div>
+                    @foreach($socialFields as $network => $meta)
+                        <div class="{{ $meta['colSpan'] }}">
+                            <x-input-label :for="$meta['id']" :value="$meta['label']" />
+                            <x-text-input
+                                :id="$meta['id']"
+                                name="social_links[{{ $network }}]"
+                                type="url"
+                                class="w-full text-sm font-mono"
+                                :placeholder="$meta['placeholder']"
+                                value="{{ old('social_links.' . $network, $settings['social_links'][$network] ?? '') }}"
+                            />
+                            <x-input-error :messages="$errors->get('social_links.' . $network)" class="mt-1" />
+                        </div>
+                    @endforeach
                 </div>
             </x-sketch-box>
 
@@ -266,7 +261,7 @@
                 <x-sketch-box variant="a" class="p-6 bg-surface space-y-4">
                     <div class="pb-2 border-b border-border">
                         <h2 class="font-heading text-2xl font-bold text-ink">Konten Halaman About</h2>
-                        <p class="font-ui text-sm text-text-secondary">Tuliskan konten About me dalam format Markdown.</p>
+                        <p class="font-ui text-sm text-text-secondary">Tuliskan konten About me dalam format Markdown (otomatis dirender di halaman About).</p>
                     </div>
 
                     <div>
@@ -274,7 +269,7 @@
                             id="about_content"
                             name="about_content"
                             rows="10"
-                            class="sketch-border sketch-radius-b bg-surface text-text font-mono text-sm p-4 w-full"
+                            class="sketch-border sketch-radius-b bg-surface text-text font-mono text-sm p-4 w-full focus:border-ink focus:ring-0"
                             placeholder="Tuliskan cerita mengenai Anda, keahlian, dan blog ini..."
                         >{{ old('about_content', $settings['about_content']) }}</textarea>
                         <x-input-error :messages="$errors->get('about_content')" class="mt-1" />
@@ -307,7 +302,7 @@
                                 id="seo_default_description"
                                 name="seo_default_description"
                                 rows="5"
-                                class="sketch-border sketch-radius-a bg-surface text-text font-body text-sm p-3 w-full"
+                                class="sketch-border sketch-radius-a bg-surface text-text font-body text-sm p-3 w-full focus:border-ink focus:ring-0"
                             >{{ old('seo_default_description', $settings['seo_default_description']) }}</textarea>
                             <x-input-error :messages="$errors->get('seo_default_description')" class="mt-1" />
                         </div>

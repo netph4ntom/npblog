@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Services\MarkdownRenderer;
 use Illuminate\View\View;
 
 class AboutController extends Controller
@@ -13,14 +14,16 @@ class AboutController extends Controller
     /**
      * Display the About page.
      */
-    public function __invoke(): View
+    public function __invoke(MarkdownRenderer $markdownRenderer): View
     {
-        $aboutContent = (string) (Setting::get('about_content') ?? 'Selamat datang di NPblog. Blog personal minimalis dengan sentuhan sketsa hand-drawn.');
-        $authorName = (string) (Setting::get('author_name') ?? 'Dapit');
-        $authorBio = (string) (Setting::get('author_bio') ?? 'Software engineer yang menyukai kesederhanaan dan desain hand-drawn.');
-        $socialLinks = (array) (Setting::get('social_links') ?? []);
-        $profileImage = (string) (Setting::get('profile_image') ?? '');
+        $aboutContent = Setting::getString('about_content', 'Selamat datang di NPblog. Blog personal minimalis dengan sentuhan sketsa hand-drawn.');
+        $aboutHtml = $markdownRenderer->render($aboutContent);
+        $authorName = Setting::getString('author_name', 'Dapit');
+        $authorBio = Setting::getString('author_bio', 'Software engineer yang menyukai kesederhanaan dan desain hand-drawn.');
+        $socialLinks = Setting::safeSocialLinks();
+        $profileImage = Setting::getString('profile_image');
+        $contactEmail = Setting::getString('contact_email');
 
-        return view('public.about', compact('aboutContent', 'authorName', 'authorBio', 'socialLinks', 'profileImage'));
+        return view('public.about', compact('aboutHtml', 'authorName', 'authorBio', 'socialLinks', 'profileImage', 'contactEmail'));
     }
 }

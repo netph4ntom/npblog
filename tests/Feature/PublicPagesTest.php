@@ -351,3 +351,39 @@ test('home page eager loads user relationship on featured and latest articles', 
     expect($featured)->not->toBeNull()
         ->and($featured->relationLoaded('user'))->toBeTrue();
 });
+
+test('public pages integrate settings for brand, hero, profile, contact, social links, markdown about, and seo description fallback', function () {
+    Setting::set('blog_name', 'Blog Dapit');
+    Setting::set('blog_description', 'Deskripsi Blog Utama');
+    Setting::set('seo_default_description', '');
+    Setting::set('logo', '/storage/media/brand-logo.webp');
+    Setting::set('favicon', '/storage/media/brand-fav.webp');
+    Setting::set('hero_image', '/storage/media/home-hero.webp');
+    Setting::set('profile_image', '/storage/media/author-avatar.webp');
+    Setting::set('contact_email', 'kontak@dapit.dev');
+    Setting::set('social_links', [
+        'github' => 'https://github.com/dapit-dev',
+        'twitter' => 'https://x.com/dapitdev',
+    ]);
+    Setting::set('about_content', "## Judul Tentang\n\nParagraf **tebal** dan [tautan](https://example.com).");
+
+    $homeRes = $this->get('/');
+    $homeRes->assertOk()
+        ->assertSee('Blog Dapit')
+        ->assertSee('/storage/media/brand-logo.webp', false)
+        ->assertSee('/storage/media/brand-fav.webp', false)
+        ->assertSee('/storage/media/home-hero.webp', false)
+        ->assertSee('/storage/media/author-avatar.webp', false)
+        ->assertSee('<meta name="description" content="Deskripsi Blog Utama">', false)
+        ->assertSee('https://github.com/dapit-dev', false);
+
+    $aboutRes = $this->get('/about');
+    $aboutRes->assertOk()
+        ->assertSee('Judul Tentang')
+        ->assertSee('<strong>tebal</strong>', false)
+        ->assertSee('mailto:kontak@dapit.dev', false)
+        ->assertSee('https://github.com/dapit-dev', false)
+        ->assertSee('https://x.com/dapitdev', false)
+        ->assertSee('/storage/media/author-avatar.webp', false)
+        ->assertDontSee('mailto:admin@npblog.local', false);
+});

@@ -16,6 +16,16 @@
                     Tentang Penulis
                 </x-button>
             </div>
+
+            @if($heroImage !== '')
+                <div class="pt-6">
+                    <img
+                        src="{{ $heroImage }}"
+                        alt="{{ $blogTagline }}"
+                        class="w-full max-h-[380px] object-cover sketch-border sketch-radius-b sketch-shadow mx-auto"
+                    />
+                </div>
+            @endif
         </section>
 
         <!-- Featured Article Section -->
@@ -62,9 +72,17 @@
         <!-- About Author Preview Section -->
         <section class="pt-8">
             <x-sketch-box variant="b" class="p-8 sm:p-10 flex flex-col sm:flex-row items-center gap-6 sm:gap-8 bg-surface">
-                <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-ink flex items-center justify-center bg-accent/20 text-ink font-heading text-4xl sm:text-5xl font-bold shrink-0">
-                    {{ substr($authorName, 0, 1) }}
-                </div>
+                @if($profileImage !== '')
+                    <img
+                        src="{{ $profileImage }}"
+                        alt="{{ $authorName }}"
+                        class="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-ink object-cover shrink-0 sketch-shadow-sm"
+                    />
+                @else
+                    <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-ink flex items-center justify-center bg-accent/20 text-ink font-heading text-4xl sm:text-5xl font-bold shrink-0">
+                        {{ substr($authorName, 0, 1) }}
+                    </div>
+                @endif
                 <div class="space-y-3 text-center sm:text-left flex-1">
                     <h2 class="font-heading text-3xl font-bold text-ink">Halo, Saya {{ $authorName }}</h2>
                     <p class="font-body text-text-secondary text-lg leading-relaxed">

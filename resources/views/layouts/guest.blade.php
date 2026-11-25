@@ -6,7 +6,17 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="robots" content="noindex, nofollow">
 
-    <title>{{ config('app.name', 'NPblog') }}</title>
+    @php
+        $blogName = \App\Models\Setting::getString('blog_name', 'NPblog');
+        $logoUrl = \App\Models\Setting::getString('logo');
+        $faviconUrl = \App\Models\Setting::getString('favicon');
+    @endphp
+
+    <title>{{ $blogName }}</title>
+
+    @if($faviconUrl !== '')
+        <link rel="icon" href="{{ $faviconUrl }}">
+    @endif
 
     <!-- Theme detector without flash -->
     <script>
@@ -26,8 +36,11 @@
 </head>
 <body class="bg-bg text-text min-h-screen flex flex-col justify-center items-center p-4 paper-texture antialiased">
     <div class="w-full max-w-md flex flex-col items-center mb-6">
-        <a href="{{ url('/') }}" class="font-heading text-4xl font-bold tracking-tight text-ink hover:text-accent-dark transition-colors mb-2">
-            NPblog<span class="text-accent text-5xl leading-none">.</span>
+        <a href="{{ url('/') }}" class="flex items-center space-x-2.5 font-heading text-4xl font-bold tracking-tight text-ink hover:text-accent-dark transition-colors mb-2">
+            @if($logoUrl !== '')
+                <img src="{{ $logoUrl }}" alt="{{ $blogName }}" class="h-9 w-auto max-w-[140px] object-contain" />
+            @endif
+            <span>{{ $blogName }}<span class="text-accent text-5xl leading-none">.</span></span>
         </a>
     </div>
 

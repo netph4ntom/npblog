@@ -67,6 +67,26 @@ class Media extends Model
     }
 
     /**
+     * Determine whether this media file is currently referenced by site settings.
+     */
+    public function isUsedInSettings(): bool
+    {
+        foreach (Setting::IMAGE_KEYS as $key) {
+            $settingUrl = Setting::get($key);
+            if (! is_string($settingUrl)) {
+                continue;
+            }
+
+            $cleanPath = Setting::extractStoragePath($settingUrl);
+            if ($cleanPath !== null && $cleanPath === $this->path) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Get the public URL for the media item.
      *
      * @return Attribute<string, never>

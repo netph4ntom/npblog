@@ -6,9 +6,16 @@
 ])
 
 @php
-    $blogName = \App\Models\Setting::get('blog_name', config('app.name', 'NPblog'));
-    $defaultDescription = \App\Models\Setting::get('seo_default_description', \App\Models\Setting::get('blog_description', 'Blog personal minimalis bergaya hand-drawn oleh Dapit.'));
-    $defaultOgImage = \App\Models\Setting::get('hero_image') ?: (\App\Models\Setting::get('logo') ?: url('/favicon.ico'));
+    $blogName = \App\Models\Setting::getString('blog_name', 'NPblog');
+    $blogDescription = \App\Models\Setting::getString('blog_description', 'Blog personal minimalis bergaya hand-drawn oleh Dapit.');
+    $defaultDescription = \App\Models\Setting::getString('seo_default_description', $blogDescription);
+    $logoUrl = \App\Models\Setting::getString('logo');
+    $heroImageUrl = \App\Models\Setting::getString('hero_image');
+    $defaultOgImage = $heroImageUrl !== '' ? $heroImageUrl : ($logoUrl !== '' ? $logoUrl : url('/favicon.ico'));
+    $authorName = \App\Models\Setting::getString('author_name', 'Dapit');
+    $faviconUrl = \App\Models\Setting::getString('favicon');
+    $socialLinks = \App\Models\Setting::safeSocialLinks();
+    $contactEmail = \App\Models\Setting::getString('contact_email');
 
     if ($article instanceof \App\Models\Article) {
         $pageTitle = $article->meta_title ?: ($article->title . ' — ' . $blogName);
@@ -20,7 +27,7 @@
         $ogUrl = $canonicalUrl;
         $ogImage = $article->featuredMedia ? $article->featuredMedia->url : $defaultOgImage;
     } else {
-        $pageTitle = $title ? ($title . ' — ' . $blogName) : (\App\Models\Setting::get('seo_default_title') ?: $blogName);
+        $pageTitle = $title ? ($title . ' — ' . $blogName) : \App\Models\Setting::getString('seo_default_title', $blogName);
         $metaDescription = $description ?? $defaultDescription;
         $canonicalUrl = $canonical ?? url()->current();
         $ogType = 'website';
@@ -29,8 +36,6 @@
         $ogUrl = $canonicalUrl;
         $ogImage = $defaultOgImage;
     }
-
-    $faviconUrl = \App\Models\Setting::get('favicon');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
@@ -60,7 +65,7 @@
         @if($article->published_at)
             <meta property="article:published_time" content="{{ $article->published_at->toIso8601String() }}">
         @endif
-        <meta property="article:author" content="{{ $article->user->name ?? \App\Models\Setting::get('author_name', 'Dapit') }}">
+        <meta property="article:author" content="{{ $article->user->name ?? $authorName }}">
         @if($article->category)
             <meta property="article:section" content="{{ $article->category->name }}">
         @endif
@@ -115,9 +120,12 @@
     >
         <div class="max-w-container mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
             <!-- Brand Logo -->
-            <a href="{{ url('/') }}" class="group flex items-center space-x-2 text-decoration-none focus-visible:outline-none">
+            <a href="{{ url('/') }}" class="group flex items-center space-x-2.5 text-decoration-none focus-visible:outline-none">
+                @if($logoUrl !== '')
+                    <img src="{{ $logoUrl }}" alt="{{ $blogName }}" class="h-9 w-auto max-w-[140px] object-contain" />
+                @endif
                 <span class="font-heading text-4xl font-bold tracking-tight text-ink group-hover:text-accent-dark transition-colors">
-                    NPblog<span class="text-accent text-5xl leading-none">.</span>
+                    {{ $blogName }}<span class="text-accent text-5xl leading-none">.</span>
                 </span>
             </a>
 
@@ -215,7 +223,7 @@
         >
             <div>
                 <div class="flex items-center justify-between pb-6 border-b border-border">
-                    <span class="font-heading text-3xl font-bold text-ink">NPblog</span>
+                    <span class="font-heading text-3xl font-bold text-ink">{{ $blogName }}</span>
                     <button
                         type="button"
                         class="w-11 h-11 flex items-center justify-center rounded-lg border-2 border-transparent hover:border-ink"
@@ -259,7 +267,7 @@
             </div>
 
             <div class="pt-6 border-t border-border text-center font-ui text-sm text-text-secondary">
-                <p>Personal blog by Dapit</p>
+                <p>Personal blog by {{ $authorName }}</p>
             </div>
         </div>
     </div>
@@ -271,9 +279,23 @@
 
     <!-- Public Footer -->
     <footer class="w-full border-t border-border mt-auto bg-surface/50">
-        <div class="max-w-container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col items-center justify-center text-center text-sm text-text-secondary font-ui relative">
+        <div class="max-w-container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col items-center justify-center text-center text-sm text-text-secondary font-ui gap-2 relative">
+            @if(!empty($socialLinks) || $contactEmail !== '')
+                <div class="flex flex-wrap items-center justify-center gap-4">
+                    @if($contactEmail !== '')
+                        <a href="mailto:{{ $contactEmail }}" class="hover:text-accent-dark transition-colors min-h-[44px] inline-flex items-center">
+                            Email
+                        </a>
+                    @endif
+                    @foreach($socialLinks as $social)
+                        <a href="{{ $social['url'] }}" target="_blank" rel="noopener noreferrer" class="hover:text-accent-dark transition-colors min-h-[44px] inline-flex items-center">
+                            {{ $social['label'] }}
+                        </a>
+                    @endforeach
+                </div>
+            @endif
             <p>
-                &copy; {{ date('Y') }} Dapit. Hand-drawn minimalism.
+                &copy; {{ date('Y') }} {{ $authorName }} &bull; {{ $blogName }}. Hand-drawn minimalism.
             </p>
             @auth
                 <div class="mt-2 sm:mt-0 sm:absolute sm:right-6 lg:right-8 flex items-center">

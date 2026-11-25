@@ -36,6 +36,22 @@ class MediaProcessor
     public const int MAX_DIMENSION = 1600;
 
     /**
+     * Maximum allowed favicon file size in bytes (1 MB).
+     */
+    public const int MAX_FAVICON_SIZE = 1024 * 1024;
+
+    /**
+     * Allowed MIME types for ICO favicons.
+     *
+     * @var list<string>
+     */
+    public const array ALLOWED_ICO_MIMES = [
+        'image/x-icon',
+        'image/vnd.microsoft.icon',
+        'image/ico',
+    ];
+
+    /**
      * Target widths for generated responsive thumbnails.
      *
      * @var list<int>
@@ -58,31 +74,138 @@ class MediaProcessor
         ?string $altText = null,
         string $disk = 'public'
     ): Media {
-        // 1. Validate file size
-        if ($file->getSize() > self::MAX_FILE_SIZE) {
-            throw new InvalidArgumentException('Ukuran gambar melebihi batas maksimum 5 MB.');
+        $realPath = $this->validateUploadFile($file, self::MAX_FILE_SIZE, ['jpg', 'jpeg', 'png', 'webp']);
+        $detectedMime = $this->detectMime($realPath, self::ALLOWED_MIMES);
+        $gdImage = $this->decodeOrientedGdImage($realPath, $detectedMime);
+
+        $origWidth = imagesx($gdImage);
+        $origHeight = imagesy($gdImage);
+
+        $mainImage = $this->resizeKeepingRatio($gdImage, $origWidth, $origHeight, self::MAX_DIMENSION);
+        $finalWidth = imagesx($mainImage);
+        $finalHeight = imagesy($mainImage);
+
+        $hash = Str::random(40);
+        $mainPath = "media/{$hash}.webp";
+
+        $mainBinary = $this->encodeWebp($mainImage, 85);
+        $storage = Storage::disk($disk);
+        $storage->put($mainPath, $mainBinary);
+        $finalSize = strlen($mainBinary);
+
+        foreach (self::THUMBNAIL_WIDTHS as $targetWidth) {
+            $thumbImage = $this->resizeWidth($gdImage, $origWidth, $origHeight, $targetWidth);
+            $thumbBinary = $this->encodeWebp($thumbImage, 80);
+            imagedestroy($thumbImage);
+
+            $storage->put("media/thumbnails/{$hash}-{$targetWidth}.webp", $thumbBinary);
         }
 
-        // 2. Validate filename against dangerous double extensions
-        $originalName = $file->getClientOriginalName();
-        $this->validateFilename($originalName);
+        if ($mainImage !== $gdImage) {
+            imagedestroy($mainImage);
+        }
+        imagedestroy($gdImage);
 
-        // 3. Server-side MIME validation via fileinfo
+        return Media::create([
+            'user_id' => $user->id,
+            'disk' => $disk,
+            'path' => $mainPath,
+            'original_name' => pathinfo($file->getClientOriginalName(), PATHINFO_BASENAME),
+            'mime' => 'image/webp',
+            'size' => $finalSize,
+            'width' => $finalWidth,
+            'height' => $finalHeight,
+            'alt_text' => $altText ? trim($altText) : null,
+        ]);
+    }
+
+    /**
+     * Validate and store a site favicon using randomized filenames and EXIF/WebP sanitization for raster uploads.
+     *
+     * @throws InvalidArgumentException
+     */
+    public function processFavicon(UploadedFile $file, string $disk = 'public'): string
+    {
+        $realPath = $this->validateUploadFile($file, self::MAX_FAVICON_SIZE, ['ico', 'png', 'jpg', 'jpeg', 'webp']);
+        $allowedMimes = array_merge(self::ALLOWED_MIMES, self::ALLOWED_ICO_MIMES);
+        $detectedMime = $this->detectMime($realPath, $allowedMimes);
+        $hash = Str::random(40);
+        $storage = Storage::disk($disk);
+
+        if (in_array($detectedMime, self::ALLOWED_ICO_MIMES, true)) {
+            $binary = file_get_contents($realPath);
+            if ($binary === false || $binary === '') {
+                throw new InvalidArgumentException('File favicon tidak terbaca.');
+            }
+
+            $path = "media/favicon-{$hash}.ico";
+            $storage->put($path, $binary);
+
+            return $storage->url($path);
+        }
+
+        $gdImage = $this->decodeOrientedGdImage($realPath, $detectedMime);
+        $iconImage = $this->resizeKeepingRatio($gdImage, imagesx($gdImage), imagesy($gdImage), 512);
+        $binary = $this->encodeWebp($iconImage, 90);
+
+        if ($iconImage !== $gdImage) {
+            imagedestroy($iconImage);
+        }
+        imagedestroy($gdImage);
+
+        $path = "media/favicon-{$hash}.webp";
+        $storage->put($path, $binary);
+
+        return $storage->url($path);
+    }
+
+    /**
+     * Validate file size, safe filename, and readability.
+     *
+     * @param  list<string>  $allowedExtensions
+     */
+    protected function validateUploadFile(UploadedFile $file, int $maxBytes, array $allowedExtensions): string
+    {
+        if ($file->getSize() > $maxBytes) {
+            $maxMb = (int) max(1, round($maxBytes / (1024 * 1024)));
+            throw new InvalidArgumentException("Ukuran gambar melebihi batas maksimum {$maxMb} MB.");
+        }
+
+        $this->validateFilename($file->getClientOriginalName(), $allowedExtensions);
+
         $realPath = $file->getRealPath();
         if (! $realPath || ! file_exists($realPath)) {
             throw new InvalidArgumentException('File gambar tidak valid atau tidak terbaca.');
         }
 
+        return $realPath;
+    }
+
+    /**
+     * Detect and verify server-side MIME type via fileinfo.
+     *
+     * @param  list<string>  $allowedMimes
+     */
+    protected function detectMime(string $realPath, array $allowedMimes): string
+    {
         $finfo = new \finfo(FILEINFO_MIME_TYPE);
         $detectedMime = $finfo->file($realPath);
 
-        if (! in_array($detectedMime, self::ALLOWED_MIMES, true)) {
+        if (! is_string($detectedMime) || ! in_array($detectedMime, $allowedMimes, true)) {
+            $mimeLabel = is_string($detectedMime) ? $detectedMime : 'unknown';
             throw new InvalidArgumentException(
-                "Format file tidak didukung: {$detectedMime}. Hanya format JPEG, PNG, dan WebP yang diizinkan."
+                "Format file tidak didukung: {$mimeLabel}. Gunakan format gambar yang diizinkan."
             );
         }
 
-        // 4. Handle EXIF orientation for JPEG before decoding
+        return $detectedMime;
+    }
+
+    /**
+     * Decode an image with GD and normalize EXIF orientation (stripping metadata).
+     */
+    protected function decodeOrientedGdImage(string $realPath, string $detectedMime): GdImage
+    {
         $orientation = 1;
         if ($detectedMime === 'image/jpeg' && function_exists('exif_read_data')) {
             $exif = @exif_read_data($realPath);
@@ -91,7 +214,6 @@ class MediaProcessor
             }
         }
 
-        // Decode source image using GD
         $gdImage = match ($detectedMime) {
             'image/jpeg' => @imagecreatefromjpeg($realPath),
             'image/png' => @imagecreatefrompng($realPath),
@@ -102,7 +224,6 @@ class MediaProcessor
             throw new InvalidArgumentException('Data gambar rusak atau tidak valid.');
         }
 
-        // Apply orientation fix if needed
         if ($orientation === 3) {
             $rotated = imagerotate($gdImage, 180, 0);
             if ($rotated !== false) {
@@ -123,63 +244,26 @@ class MediaProcessor
             }
         }
 
-        $origWidth = imagesx($gdImage);
-        $origHeight = imagesy($gdImage);
+        return $gdImage;
+    }
 
-        // 5. Downscale main image to max 1600px keeping aspect ratio
-        $mainImage = $this->resizeKeepingRatio($gdImage, $origWidth, $origHeight, self::MAX_DIMENSION);
-        $finalWidth = imagesx($mainImage);
-        $finalHeight = imagesy($mainImage);
-
-        // 6. Generate random unique hash
-        $hash = Str::random(40);
-        $mainPath = "media/{$hash}.webp";
-
-        // 7. Save main image as WebP
+    /**
+     * Encode a GD resource into WebP binary bytes.
+     */
+    protected function encodeWebp(GdImage $image, int $quality): string
+    {
         ob_start();
-        imagewebp($mainImage, null, 85);
-        $mainBinary = (string) ob_get_clean();
+        imagewebp($image, null, $quality);
 
-        $storage = Storage::disk($disk);
-        $storage->put($mainPath, $mainBinary);
-        $finalSize = strlen($mainBinary);
-
-        // 8. Generate thumbnails (400px and 800px)
-        foreach (self::THUMBNAIL_WIDTHS as $targetWidth) {
-            $thumbImage = $this->resizeWidth($gdImage, $origWidth, $origHeight, $targetWidth);
-            ob_start();
-            imagewebp($thumbImage, null, 80);
-            $thumbBinary = (string) ob_get_clean();
-            imagedestroy($thumbImage);
-
-            $thumbPath = "media/thumbnails/{$hash}-{$targetWidth}.webp";
-            $storage->put($thumbPath, $thumbBinary);
-        }
-
-        // Free memory
-        if ($mainImage !== $gdImage) {
-            imagedestroy($mainImage);
-        }
-        imagedestroy($gdImage);
-
-        // 9. Persist Media record
-        return Media::create([
-            'user_id' => $user->id,
-            'disk' => $disk,
-            'path' => $mainPath,
-            'original_name' => pathinfo($originalName, PATHINFO_BASENAME),
-            'mime' => 'image/webp',
-            'size' => $finalSize,
-            'width' => $finalWidth,
-            'height' => $finalHeight,
-            'alt_text' => $altText ? trim($altText) : null,
-        ]);
+        return (string) ob_get_clean();
     }
 
     /**
      * Validate against dangerous filenames (double extensions, executables, scripts).
+     *
+     * @param  list<string>  $allowedExtensions
      */
-    protected function validateFilename(string $filename): void
+    protected function validateFilename(string $filename, array $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp']): void
     {
         $lowercase = strtolower($filename);
         $forbiddenExtensions = [
@@ -198,8 +282,8 @@ class MediaProcessor
         }
 
         $ext = end($parts);
-        if (! in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {
-            throw new InvalidArgumentException('Ekstensi file tidak diizinkan. Hanya jpg, jpeg, png, webp yang didukung.');
+        if (! in_array($ext, $allowedExtensions, true)) {
+            throw new InvalidArgumentException('Ekstensi file tidak diizinkan.');
         }
     }
 

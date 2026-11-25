@@ -33,10 +33,12 @@ class HomeController extends Controller
             ->take(6)
             ->get();
 
-        $authorBio = (string) (Setting::get('author_bio') ?? 'Software engineer yang menyukai kesederhanaan dan desain hand-drawn.');
-        $authorName = (string) (Setting::get('author_name') ?? 'Dapit');
-        $blogTagline = (string) (Setting::get('blog_tagline') ?? 'Catatan Kode & Arsitektur Minimalis');
+        $authorBio = Setting::getString('author_bio', 'Software engineer yang menyukai kesederhanaan dan desain hand-drawn.');
+        $authorName = Setting::getString('author_name', 'Dapit');
+        $blogTagline = Setting::getString('blog_tagline', 'Catatan Kode & Arsitektur Minimalis');
+        $heroImage = Setting::getString('hero_image');
+        $profileImage = Setting::getString('profile_image');
 
-        return view('public.home', compact('featured', 'latest', 'authorBio', 'authorName', 'blogTagline'));
+        return view('public.home', compact('featured', 'latest', 'authorBio', 'authorName', 'blogTagline', 'heroImage', 'profileImage'));
     }
 }
