@@ -18,7 +18,6 @@
 @if(!empty($faviconUrl))
     <link rel="icon" href="{{ $faviconUrl }}">
 @else
-    <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
 @endif

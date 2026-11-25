@@ -88,11 +88,13 @@
             width: 88px;
             height: 88px;
             margin: 0 auto 1.25rem;
+            padding: 0.375rem;
+            background-color: var(--bg);
             border: 2px solid var(--ink);
             border-radius: 1rem;
             box-shadow: 2px 2px 0 var(--ink);
             display: block;
-            object-fit: cover;
+            object-fit: contain;
         }
         h1 {
             font-family: 'Caveat', cursive;

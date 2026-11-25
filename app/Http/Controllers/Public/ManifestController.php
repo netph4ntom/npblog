@@ -71,4 +71,3 @@ class ManifestController extends Controller
             ]);
     }
 }
-

@@ -21,4 +21,3 @@ class OfflineController extends Controller
         ]);
     }
 }
-

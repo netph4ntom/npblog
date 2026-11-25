@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const PRECACHE_NAME = `npblog-precache-${CACHE_VERSION}`;
 const PAGES_CACHE = `npblog-pages-${CACHE_VERSION}`;
 const ASSETS_CACHE = `npblog-assets-${CACHE_VERSION}`;
@@ -38,8 +38,7 @@ function isImmutableAsset(pathname) {
     return (
         pathname.startsWith('/build/') ||
         pathname.startsWith('/fonts/') ||
-        pathname.startsWith('/icons/') ||
-        pathname === '/favicon.ico'
+        pathname.startsWith('/icons/')
     );
 }
 

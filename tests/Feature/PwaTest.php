@@ -41,8 +41,7 @@ test('web app manifest returns valid manifest+json with dynamic settings and ver
     expect(file_exists(public_path('icons/apple-touch-icon.png')))->toBeTrue()
         ->and(file_exists(public_path('icons/favicon-32x32.png')))->toBeTrue()
         ->and(file_exists(public_path('icons/favicon-16x16.png')))->toBeTrue()
-        ->and(file_exists(public_path('favicon.ico')))->toBeTrue()
-        ->and(filesize(public_path('favicon.ico')))->toBeGreaterThan(0);
+        ->and(file_exists(public_path('favicon.ico')))->toBeFalse();
 });
 
 test('offline fallback page renders cleanly with noindex and home link', function () {
@@ -74,7 +73,9 @@ test('layouts include PWA manifest, theme-color, apple-touch-icon, and respect c
         ->assertSee('<link rel="manifest" href="/manifest.webmanifest">', false)
         ->assertSee('<link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">', false)
         ->assertSee('id="pwa-theme-color"', false)
-        ->assertSee('href="/favicon.ico"', false);
+        ->assertSee('href="/icons/favicon-32x32.png"', false)
+        ->assertSee('href="/icons/favicon-16x16.png"', false)
+        ->assertDontSee('href="/favicon.ico"', false);
 
     $csp = $home->headers->get('Content-Security-Policy');
     expect($csp)->toContain("manifest-src 'self'")
@@ -84,6 +85,7 @@ test('layouts include PWA manifest, theme-color, apple-touch-icon, and respect c
     $customHome = $this->get('/');
     $customHome->assertOk()
         ->assertSee('<link rel="icon" href="https://example.com/custom-favicon.png">', false)
+        ->assertDontSee('href="/icons/favicon-32x32.png"', false)
         ->assertDontSee('href="/favicon.ico"', false);
 
     $login = $this->get('/login');
@@ -103,4 +105,3 @@ test('sitemap excludes offline and manifest endpoints', function () {
         ->assertDontSee('/offline')
         ->assertDontSee('/manifest.webmanifest');
 });
-
