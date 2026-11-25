@@ -11,16 +11,16 @@
     @php
         $faviconUrl = \App\Models\Setting::getString('favicon');
     @endphp
-    @if($faviconUrl !== '')
-        <link rel="icon" href="{{ $faviconUrl }}">
-    @endif
+    <x-pwa-meta :favicon-url="$faviconUrl" app-name="NPblog Admin" />
 
     <!-- Theme and sidebar collapsed state without flash -->
     <script>
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
+            document.getElementById('pwa-theme-color')?.setAttribute('content', '#222520');
         } else {
             document.documentElement.classList.remove('dark');
+            document.getElementById('pwa-theme-color')?.setAttribute('content', '#F6F6F3');
         }
         if (localStorage.getItem('adminSidebarCollapsed') === 'true') {
             document.documentElement.classList.add('admin-sidebar-collapsed');

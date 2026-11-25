@@ -11,7 +11,7 @@
     $defaultDescription = \App\Models\Setting::getString('seo_default_description', $blogDescription);
     $logoUrl = \App\Models\Setting::getString('logo');
     $heroImageUrl = \App\Models\Setting::getString('hero_image');
-    $defaultOgImage = $heroImageUrl !== '' ? $heroImageUrl : ($logoUrl !== '' ? $logoUrl : url('/favicon.ico'));
+    $defaultOgImage = $heroImageUrl !== '' ? $heroImageUrl : ($logoUrl !== '' ? $logoUrl : url('/icons/icon-512x512.png'));
     $authorName = \App\Models\Setting::getString('author_name', 'Dapit');
     $faviconUrl = \App\Models\Setting::getString('favicon');
     $socialLinks = \App\Models\Setting::safeSocialLinks();
@@ -48,9 +48,7 @@
     <meta name="description" content="{{ $metaDescription }}">
     <link rel="canonical" href="{{ $canonicalUrl }}">
 
-    @if(!empty($faviconUrl))
-        <link rel="icon" href="{{ $faviconUrl }}">
-    @endif
+    <x-pwa-meta :favicon-url="$faviconUrl" :app-name="$blogName" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="{{ $ogType }}">
@@ -86,8 +84,10 @@
     <script>
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
+            document.getElementById('pwa-theme-color')?.setAttribute('content', '#222520');
         } else {
             document.documentElement.classList.remove('dark');
+            document.getElementById('pwa-theme-color')?.setAttribute('content', '#F6F6F3');
         }
     </script>
 

@@ -7,8 +7,10 @@
             localStorage.setItem('theme', theme);
             if (this.darkMode) {
                 document.documentElement.classList.add('dark');
+                document.getElementById('pwa-theme-color')?.setAttribute('content', '#222520');
             } else {
                 document.documentElement.classList.remove('dark');
+                document.getElementById('pwa-theme-color')?.setAttribute('content', '#F6F6F3');
             }
         }
     }"

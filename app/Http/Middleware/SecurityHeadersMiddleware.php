@@ -32,6 +32,8 @@ class SecurityHeadersMiddleware
             "img-src 'self' data: blob: https:",
             "font-src 'self' data:",
             "connect-src 'self'",
+            "manifest-src 'self'",
+            "worker-src 'self'",
             "frame-ancestors 'self'",
             "base-uri 'self'",
             "form-action 'self'",
