@@ -101,6 +101,8 @@ test('admin user bottom menu contains profile setting and logout options', funct
         ->assertSee('userMenuOpen', false)
         ->assertSee('Profile Setting', false)
         ->assertSee(route('logout'), false);
+
+    expect(substr_count($response->getContent(), 'userMenuOpen: false'))->toBe(2);
 });
 
 test('pagination uses theme tokens and hand-drawn styling without hardcoded gray utilities', function () {

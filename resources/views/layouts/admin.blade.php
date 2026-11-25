@@ -178,100 +178,7 @@
         </nav>
 
         <!-- Sidebar User Dropdown Menu -->
-        <div
-            x-data="{ userMenuOpen: false }"
-            @click.outside="userMenuOpen = false"
-            @keydown.escape.window="userMenuOpen = false"
-            class="relative border-t border-gray-800 font-ui text-sm select-none"
-        >
-            <!-- Trigger Button -->
-            <button
-                type="button"
-                @click="userMenuOpen = !userMenuOpen"
-                class="w-full p-3 flex items-center transition-colors hover:bg-gray-800/80 focus-visible:outline-none sidebar-footer text-left group"
-                :class="sidebarCollapsed ? 'justify-center' : 'justify-between'"
-                :aria-expanded="userMenuOpen"
-                aria-haspopup="true"
-                :title="sidebarCollapsed ? '{{ Auth::user()->name ?? 'Dapit' }} (Menu Akun)' : ''"
-            >
-                <div class="flex items-center space-x-3 min-w-0">
-                    <!-- User Avatar Initial -->
-                    <div class="w-9 h-9 rounded-full bg-accent/20 border border-accent/40 text-accent-dark dark:text-accent font-bold flex items-center justify-center shrink-0 text-base">
-                        {{ strtoupper(substr(Auth::user()->name ?? 'D', 0, 1)) }}
-                    </div>
-                    <!-- User Info (Hidden when collapsed) -->
-                    <div x-show="!sidebarCollapsed" x-cloak class="truncate min-w-0 sidebar-user">
-                        <p class="font-bold text-white text-base truncate group-hover:text-accent-dark transition-colors">{{ Auth::user()->name ?? 'Dapit' }}</p>
-                        <p class="text-xs text-gray-400 truncate">{{ Auth::user()->email ?? 'admin@npblog.local' }}</p>
-                    </div>
-                </div>
-
-                <!-- Chevron Icon (Hidden when collapsed) -->
-                <svg
-                    x-show="!sidebarCollapsed"
-                    x-cloak
-                    class="w-4 h-4 text-gray-400 group-hover:text-white transition-transform duration-200 shrink-0 ml-1"
-                    :class="userMenuOpen ? 'rotate-180' : ''"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2"
-                >
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
-                </svg>
-            </button>
-
-            <!-- Dropdown Popover (Opens Upwards) -->
-            <div
-                x-show="userMenuOpen"
-                x-cloak
-                x-transition:enter="transition ease-out duration-150"
-                x-transition:enter-start="opacity-0 translate-y-2 scale-95"
-                x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-                x-transition:leave="transition ease-in duration-100"
-                x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-                x-transition:leave-end="opacity-0 translate-y-2 scale-95"
-                class="absolute bottom-full mb-2 admin-user-popover bg-[#262825] border-2 border-ink text-white rounded-xl shadow-2xl py-2 z-50 overflow-hidden font-ui"
-                :class="sidebarCollapsed ? 'left-2 w-56' : 'left-3 right-3'"
-                style="bottom: calc(100% + 0.5rem);"
-            >
-                <!-- Popover Header -->
-                <div class="px-4 py-2 border-b border-gray-700/60">
-                    <p class="text-xs uppercase tracking-wider text-gray-400 font-bold">Akun Administrator</p>
-                    <p class="font-bold text-white text-base truncate mt-0.5">{{ Auth::user()->name ?? 'Dapit' }}</p>
-                    <p class="text-xs text-gray-300 truncate">{{ Auth::user()->email ?? 'admin@npblog.local' }}</p>
-                </div>
-
-                <!-- Popover Links -->
-                <div class="py-1">
-                    <a
-                        href="{{ url('/profile') }}"
-                        class="flex items-center px-4 py-2.5 min-h-[44px] text-base transition-colors {{ request()->is('profile*') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-200 hover:text-white hover:bg-accent-dark/40' }}"
-                    >
-                        <svg class="w-5 h-5 mr-3 stroke-current {{ request()->is('profile*') ? 'text-on-accent' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
-                        Profile Setting
-                    </a>
-                </div>
-
-                <div class="border-t border-gray-700/60 pt-1">
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button
-                            type="submit"
-                            class="w-full flex items-center px-4 py-2.5 text-base text-red-400 hover:text-red-300 hover:bg-red-950/30 transition-colors text-left"
-                        >
-                            <svg class="w-5 h-5 mr-3 stroke-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                            </svg>
-                            Keluar (Logout)
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
+        <x-admin-user-menu />
     </aside>
 
     <!-- Mobile Drawer -->
@@ -305,11 +212,11 @@
             x-transition:leave="ease-in duration-150"
             x-transition:leave-start="translate-x-0"
             x-transition:leave-end="-translate-x-full"
-            class="fixed inset-y-0 left-0 w-full max-w-xs bg-admin-sidebar text-gray-200 p-6 shadow-xl flex flex-col justify-between overflow-y-auto gap-6"
+            class="fixed inset-y-0 left-0 w-full max-w-xs bg-admin-sidebar text-gray-200 p-6 shadow-xl flex flex-col justify-between gap-4"
             @keydown.escape.window="adminDrawerOpen = false"
         >
-            <div>
-                <div class="flex items-center justify-between pb-6 border-b border-gray-800">
+            <div class="flex flex-col flex-1 min-h-0">
+                <div class="flex items-center justify-between pb-6 border-b border-gray-800 shrink-0">
                     <span class="font-heading text-3xl font-bold text-white">NPblog Admin</span>
                     <button
                         type="button"
@@ -321,7 +228,7 @@
                     </button>
                 </div>
 
-                <nav class="mt-6 flex flex-col space-y-2 font-ui text-xl">
+                <nav class="mt-6 flex-1 flex flex-col space-y-2 font-ui text-xl overflow-y-auto min-h-0">
                     <a href="{{ url('/dashboard') }}" class="px-3 py-2.5 rounded-lg min-h-[44px] flex items-center {{ request()->is('dashboard') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">Dashboard</a>
                     <a href="{{ url('/admin/articles') }}" class="px-3 py-2.5 rounded-lg min-h-[44px] flex items-center {{ request()->is('admin/articles*') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">Articles</a>
                     <a href="{{ url('/admin/categories') }}" class="px-3 py-2.5 rounded-lg min-h-[44px] flex items-center {{ request()->is('admin/categories*') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">Categories</a>
@@ -330,28 +237,7 @@
                 </nav>
             </div>
 
-            <div class="pt-4 border-t border-gray-800 space-y-2 font-ui">
-                <div class="flex items-center space-x-3 px-2 py-2">
-                    <div class="w-9 h-9 rounded-full bg-accent/20 border border-accent/40 text-accent font-bold flex items-center justify-center shrink-0 text-base">
-                        {{ strtoupper(substr(Auth::user()->name ?? 'D', 0, 1)) }}
-                    </div>
-                    <div class="min-w-0">
-                        <p class="font-bold text-white text-base truncate">{{ Auth::user()->name ?? 'Dapit' }}</p>
-                        <p class="text-xs text-gray-400 truncate">{{ Auth::user()->email ?? 'admin@npblog.local' }}</p>
-                    </div>
-                </div>
-
-                <a href="{{ url('/profile') }}" class="px-3 py-2.5 rounded-lg min-h-[44px] flex items-center text-base {{ request()->is('profile*') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
-                    Profile Setting
-                </a>
-
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="w-full text-left font-ui text-base text-red-400 hover:text-red-300 hover:bg-red-950/30 px-3 py-2.5 rounded-lg min-h-[44px] flex items-center transition-colors">
-                        Keluar (Logout)
-                    </button>
-                </form>
-            </div>
+            <x-admin-user-menu :is-mobile="true" />
         </div>
     </div>
 
