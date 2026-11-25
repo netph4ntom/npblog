@@ -29,20 +29,106 @@
             </form>
         </div>
 
-        <!-- Category Chips Filter -->
-        <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-            <a href="{{ route('articles.index', request()->only('q')) }}">
-                <x-chip :variant="!$categorySlug ? 'accent' : 'default'">
-                    Semua
-                </x-chip>
-            </a>
-            @foreach($categories as $cat)
-                <a href="{{ route('articles.index', ['category' => $cat->slug] + request()->only('q')) }}">
-                    <x-chip :variant="$categorySlug === $cat->slug ? 'accent' : 'default'">
-                        {{ $cat->name }} ({{ $cat->articles_count }})
-                    </x-chip>
+        <!-- Category Dropdown Filter -->
+        @php
+            $activeCategory = $categories->firstWhere('slug', $categorySlug);
+            $activeCategoryLabel = $activeCategory
+                ? $activeCategory->name . ' (' . $activeCategory->articles_count . ')'
+                : 'Semua Kategori';
+        @endphp
+
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div
+                x-data="{ open: false }"
+                @click.outside="open = false"
+                @keydown.escape.window="open = false"
+                class="relative inline-block text-left font-ui"
+            >
+                <button
+                    type="button"
+                    @click="open = !open"
+                    class="inline-flex items-center justify-between gap-3 px-4 py-2.5 min-h-[44px] min-w-[220px] bg-surface text-text hover:bg-bg border-2 border-ink sketch-radius-b sketch-shadow-sm transition-all focus-visible:outline-none"
+                    :aria-expanded="open.toString()"
+                    aria-haspopup="true"
+                    aria-label="Filter kategori artikel"
+                >
+                    <span class="inline-flex items-center gap-2 text-base">
+                        <svg class="w-4 h-4 text-accent-dark stroke-current shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        </svg>
+                        <span class="text-text-secondary">Kategori:</span>
+                        <span class="font-bold text-ink">{{ $activeCategoryLabel }}</span>
+                    </span>
+
+                    <svg
+                        class="w-4 h-4 text-text-secondary transition-transform duration-150 shrink-0"
+                        :class="open ? 'rotate-180' : ''"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                    >
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+
+                <!-- Dropdown Panel -->
+                <div
+                    x-show="open"
+                    x-cloak
+                    x-transition:enter="transition ease-out duration-150"
+                    x-transition:enter-start="opacity-0 -translate-y-1 scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave="transition ease-in duration-100"
+                    x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                    x-transition:leave-end="opacity-0 -translate-y-1 scale-95"
+                    class="absolute left-0 mt-2 w-64 bg-surface border-2 border-ink sketch-radius-b sketch-shadow py-1.5 z-30 overflow-hidden"
+                    role="menu"
+                    aria-label="Daftar kategori"
+                >
+                    <a
+                        href="{{ route('articles.index', request()->only('q')) }}"
+                        @click="open = false"
+                        role="menuitem"
+                        class="flex items-center justify-between px-4 py-2.5 min-h-[44px] text-base transition-colors {{ !$categorySlug ? 'bg-accent-dark text-on-accent font-bold' : 'text-text hover:bg-bg hover:text-ink' }}"
+                    >
+                        <span>Semua Kategori</span>
+                        @if(!$categorySlug)
+                            <svg class="w-4 h-4 stroke-current shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        @endif
+                    </a>
+
+                    <div class="my-1 border-t border-border"></div>
+
+                    @foreach($categories as $cat)
+                        <a
+                            href="{{ route('articles.index', ['category' => $cat->slug] + request()->only('q')) }}"
+                            @click="open = false"
+                            role="menuitem"
+                            class="flex items-center justify-between px-4 py-2.5 min-h-[44px] text-base transition-colors {{ $categorySlug === $cat->slug ? 'bg-accent-dark text-on-accent font-bold' : 'text-text hover:bg-bg hover:text-ink' }}"
+                        >
+                            <span class="truncate">{{ $cat->name }}</span>
+                            <span class="ml-2 text-xs font-mono px-2 py-0.5 rounded {{ $categorySlug === $cat->slug ? 'bg-on-accent/15 text-on-accent' : 'bg-bg text-text-secondary border border-border' }}">
+                                {{ $cat->articles_count }}
+                            </span>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+
+            @if($categorySlug || request('q'))
+                <a
+                    href="{{ route('articles.index') }}"
+                    class="inline-flex items-center gap-1.5 font-ui text-sm font-bold text-accent-dark hover:underline min-h-[44px] px-2"
+                >
+                    <svg class="w-4 h-4 stroke-current" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Reset Filter
                 </a>
-            @endforeach
+            @endif
         </div>
 
         <!-- Articles Grid -->

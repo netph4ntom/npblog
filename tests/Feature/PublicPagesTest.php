@@ -387,3 +387,22 @@ test('public pages integrate settings for brand, hero, profile, contact, social 
         ->assertSee('/storage/media/author-avatar.webp', false)
         ->assertDontSee('mailto:admin@npblog.local', false);
 });
+
+test('articles index renders category filter as accessible hand-drawn dropdown preserving search query', function () {
+    Article::factory()->create([
+        'user_id' => $this->user->id,
+        'category_id' => $this->techCategory->id,
+        'title' => 'Artikel Dropdown Test',
+        'status' => 'published',
+        'published_at' => now()->subDay(),
+    ]);
+
+    $response = $this->get('/articles?category=technology&q=Dropdown');
+
+    $response->assertOk()
+        ->assertSee('aria-label="Filter kategori artikel"', false)
+        ->assertSee('role="menu"', false)
+        ->assertSee('Technology (1)')
+        ->assertSee('category=cybersecurity&amp;q=Dropdown', false)
+        ->assertSee('Reset Filter');
+});
