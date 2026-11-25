@@ -41,12 +41,12 @@
                     {{ $article->excerpt }}
                 </p>
 
-                <div class="mt-6 flex items-center justify-between">
+                <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center space-x-2">
                         <span class="font-ui text-text font-medium text-base">Oleh {{ $article->user->name ?? 'Dapit' }}</span>
                     </div>
 
-                    <a href="{{ route('articles.show', $article->slug) }}" class="inline-flex items-center font-ui text-lg font-bold text-accent-dark group-hover:underline">
+                    <a href="{{ route('articles.show', $article->slug) }}" class="inline-flex items-center font-ui text-lg font-bold text-accent-dark group-hover:underline min-h-[44px]">
                         Baca Selengkapnya
                         <svg class="w-5 h-5 ml-1 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />

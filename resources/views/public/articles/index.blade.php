@@ -47,7 +47,7 @@
                 <button
                     type="button"
                     @click="open = !open"
-                    class="inline-flex items-center justify-between gap-3 px-4 py-2.5 min-h-[44px] min-w-[220px] bg-surface text-text hover:bg-bg border-2 border-ink sketch-radius-b sketch-shadow-sm transition-all focus-visible:outline-none"
+                    class="inline-flex items-center justify-between gap-3 px-4 py-2.5 min-h-[44px] min-w-[220px] max-w-full bg-surface text-text hover:bg-bg border-2 border-ink sketch-radius-b sketch-shadow-sm transition-all focus-visible:outline-none"
                     :aria-expanded="open.toString()"
                     aria-haspopup="true"
                     aria-label="Filter kategori artikel"
@@ -82,7 +82,7 @@
                     x-transition:leave="transition ease-in duration-100"
                     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
                     x-transition:leave-end="opacity-0 -translate-y-1 scale-95"
-                    class="absolute left-0 mt-2 w-64 bg-surface border-2 border-ink sketch-radius-b sketch-shadow py-1.5 z-30 overflow-hidden"
+                    class="absolute left-0 mt-2 w-64 max-w-[calc(100vw-2rem)] bg-surface border-2 border-ink sketch-radius-b sketch-shadow py-1.5 z-30 overflow-hidden"
                     role="menu"
                     aria-label="Daftar kategori"
                 >

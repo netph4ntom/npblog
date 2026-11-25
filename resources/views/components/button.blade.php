@@ -18,7 +18,7 @@ $sizeClasses = match($size) {
 
 $variantClasses = match($variant) {
     'secondary' => 'bg-surface text-text hover:bg-bg',
-    'danger' => 'bg-danger text-white hover:opacity-90',
+    'danger' => 'bg-danger text-on-accent hover:opacity-90',
     'ghost' => 'bg-transparent text-text hover:bg-surface border-transparent shadow-none',
     default => 'bg-accent-dark text-on-accent hover:opacity-95',
 };

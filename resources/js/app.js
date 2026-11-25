@@ -4,6 +4,30 @@ import Alpine from 'alpinejs';
 window.Alpine = Alpine;
 
 /**
+ * Copy text to clipboard with fallback for non-HTTPS mobile/LAN environments.
+ */
+async function copyTextToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+    }
+
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.setAttribute('readonly', '');
+    document.body.appendChild(textArea);
+    textArea.select();
+    const ok = document.execCommand('copy');
+    textArea.remove();
+
+    if (!ok) {
+        throw new Error('Clipboard copy failed');
+    }
+}
+
+/**
  * Initialize code blocks with language badge and copy button.
  */
 function setupCodeBlocks() {
@@ -42,7 +66,7 @@ function setupCodeBlocks() {
             const textToCopy = codeEl.innerText;
 
             try {
-                await navigator.clipboard.writeText(textToCopy);
+                await copyTextToClipboard(textToCopy);
                 const span = copyBtn.querySelector('span');
                 if (span) span.textContent = 'Disalin!';
 

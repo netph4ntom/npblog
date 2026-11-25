@@ -22,14 +22,14 @@
                 <!-- Status & Category Filters -->
                 <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
                     <!-- Status Filter -->
-                    <select name="status" onchange="this.form.submit()" class="font-ui text-sm border-2 border-ink rounded-lg bg-bg px-3 py-2 min-h-[44px]">
+                    <select name="status" onchange="this.form.submit()" class="font-ui text-sm border-2 border-ink rounded-lg bg-bg text-text px-3 py-2 min-h-[44px] w-full sm:w-auto focus:border-ink focus:ring-0">
                         <option value="">Semua Status</option>
                         <option value="published" {{ request('status') === 'published' ? 'selected' : '' }}>Terbit (Published)</option>
                         <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draf (Draft)</option>
                     </select>
 
                     <!-- Category Filter -->
-                    <select name="category_id" onchange="this.form.submit()" class="font-ui text-sm border-2 border-ink rounded-lg bg-bg px-3 py-2 min-h-[44px]">
+                    <select name="category_id" onchange="this.form.submit()" class="font-ui text-sm border-2 border-ink rounded-lg bg-bg text-text px-3 py-2 min-h-[44px] w-full sm:w-auto focus:border-ink focus:ring-0">
                         <option value="">Semua Kategori</option>
                         @foreach($categories as $cat)
                             <option value="{{ $cat->id }}" {{ (string) request('category_id') === (string) $cat->id ? 'selected' : '' }}>
@@ -137,15 +137,15 @@
                             Kategori: {{ $art->category->name ?? '—' }} • {{ $art->reading_time }} min baca
                         </p>
 
-                        <div class="pt-3 border-t border-border flex items-center justify-between">
-                            <a href="{{ route('admin.articles.edit', $art->id) }}" class="font-bold text-accent-dark font-ui text-sm">
+                        <div class="pt-3 border-t border-border flex items-center justify-between gap-2">
+                            <a href="{{ route('admin.articles.edit', $art->id) }}" class="font-bold text-accent-dark font-ui text-sm inline-flex items-center min-h-[44px] px-1">
                                 Edit Artikel &rarr;
                             </a>
 
                             <form action="{{ route('admin.articles.destroy', $art->id) }}" method="POST" onsubmit="return confirm('Hapus artikel ini?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="font-bold text-danger font-ui text-sm">
+                                <button type="submit" class="font-bold text-danger font-ui text-sm inline-flex items-center min-h-[44px] px-2">
                                     Hapus
                                 </button>
                             </form>

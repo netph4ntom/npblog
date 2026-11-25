@@ -83,15 +83,15 @@
                             <p class="font-body text-sm text-text-secondary">{{ $category->description }}</p>
                         @endif
 
-                        <div class="pt-3 border-t border-border flex items-center justify-between">
-                            <a href="{{ route('admin.categories.edit', $category->id) }}" class="font-bold text-accent-dark font-ui text-sm">
+                        <div class="pt-3 border-t border-border flex items-center justify-between gap-2">
+                            <a href="{{ route('admin.categories.edit', $category->id) }}" class="font-bold text-accent-dark font-ui text-sm inline-flex items-center min-h-[44px] px-1">
                                 Edit Kategori &rarr;
                             </a>
 
                             <form action="{{ route('admin.categories.destroy', $category->id) }}" method="POST" onsubmit="return confirm('Hapus kategori ini?');">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="font-bold text-danger font-ui text-sm">
+                                <button type="submit" class="font-bold text-danger font-ui text-sm inline-flex items-center min-h-[44px] px-2">
                                     Hapus
                                 </button>
                             </form>

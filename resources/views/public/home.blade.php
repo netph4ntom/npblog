@@ -42,12 +42,12 @@
 
         <!-- Latest Articles Section -->
         <section class="space-y-8">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-wrap items-center justify-between gap-2">
                 <div class="flex items-center space-x-3">
                     <h2 class="font-heading text-3xl sm:text-4xl font-bold text-ink">Tulisan Terbaru</h2>
                 </div>
 
-                <a href="{{ route('articles.index') }}" class="font-ui text-lg font-bold text-accent-dark hover:underline inline-flex items-center">
+                <a href="{{ route('articles.index') }}" class="font-ui text-lg font-bold text-accent-dark hover:underline inline-flex items-center min-h-[44px]">
                     Lihat Semua
                     <svg class="w-5 h-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />

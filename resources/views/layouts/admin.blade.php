@@ -45,6 +45,7 @@
             document.documentElement.classList.toggle('admin-sidebar-collapsed', this.sidebarCollapsed);
         }
     }"
+    x-effect="document.body.classList.toggle('overflow-hidden', adminDrawerOpen)"
 >
     <script>
         window.addEventListener('DOMContentLoaded', () => {
@@ -96,7 +97,7 @@
         <nav class="flex-1 px-3 py-6 space-y-1.5 font-ui text-lg overflow-y-auto">
             <a
                 href="{{ url('/dashboard') }}"
-                class="sidebar-link flex items-center rounded-lg transition-colors min-h-[44px] {{ request()->is('dashboard') ? 'bg-accent-dark text-white font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}"
+                class="sidebar-link flex items-center rounded-lg transition-colors min-h-[44px] {{ request()->is('dashboard') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}"
                 :class="sidebarCollapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'"
                 :title="sidebarCollapsed ? 'Dashboard' : ''"
                 aria-label="Dashboard"
@@ -113,7 +114,7 @@
 
             <a
                 href="{{ url('/admin/articles') }}"
-                class="sidebar-link flex items-center rounded-lg transition-colors min-h-[44px] {{ request()->is('admin/articles*') ? 'bg-accent-dark text-white font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}"
+                class="sidebar-link flex items-center rounded-lg transition-colors min-h-[44px] {{ request()->is('admin/articles*') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}"
                 :class="sidebarCollapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'"
                 :title="sidebarCollapsed ? 'Articles' : ''"
                 aria-label="Articles"
@@ -130,7 +131,7 @@
 
             <a
                 href="{{ url('/admin/categories') }}"
-                class="sidebar-link flex items-center rounded-lg transition-colors min-h-[44px] {{ request()->is('admin/categories*') ? 'bg-accent-dark text-white font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}"
+                class="sidebar-link flex items-center rounded-lg transition-colors min-h-[44px] {{ request()->is('admin/categories*') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}"
                 :class="sidebarCollapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'"
                 :title="sidebarCollapsed ? 'Categories' : ''"
                 aria-label="Categories"
@@ -145,7 +146,7 @@
 
             <a
                 href="{{ url('/admin/media') }}"
-                class="sidebar-link flex items-center rounded-lg transition-colors min-h-[44px] {{ request()->is('admin/media*') ? 'bg-accent-dark text-white font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}"
+                class="sidebar-link flex items-center rounded-lg transition-colors min-h-[44px] {{ request()->is('admin/media*') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}"
                 :class="sidebarCollapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'"
                 :title="sidebarCollapsed ? 'Media' : ''"
                 aria-label="Media"
@@ -161,7 +162,7 @@
 
             <a
                 href="{{ url('/admin/settings') }}"
-                class="sidebar-link flex items-center rounded-lg transition-colors min-h-[44px] {{ request()->is('admin/settings*') ? 'bg-accent-dark text-white font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}"
+                class="sidebar-link flex items-center rounded-lg transition-colors min-h-[44px] {{ request()->is('admin/settings*') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}"
                 :class="sidebarCollapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'"
                 :title="sidebarCollapsed ? 'Settings' : ''"
                 aria-label="Settings"
@@ -245,9 +246,9 @@
                 <div class="py-1">
                     <a
                         href="{{ url('/profile') }}"
-                        class="flex items-center px-4 py-2.5 text-base text-gray-200 hover:text-white hover:bg-accent-dark/40 transition-colors {{ request()->is('profile*') ? 'bg-accent-dark text-white font-bold' : '' }}"
+                        class="flex items-center px-4 py-2.5 min-h-[44px] text-base transition-colors {{ request()->is('profile*') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-200 hover:text-white hover:bg-accent-dark/40' }}"
                     >
-                        <svg class="w-5 h-5 mr-3 stroke-current text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg class="w-5 h-5 mr-3 stroke-current {{ request()->is('profile*') ? 'text-on-accent' : 'text-gray-400' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                             <circle cx="12" cy="7" r="4"></circle>
                         </svg>
@@ -291,7 +292,7 @@
             x-transition:leave="ease-in duration-150"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
-            class="fixed inset-0 bg-ink/50 backdrop-blur-xs"
+            class="fixed inset-0 bg-ink/50 backdrop-blur-sm"
             @click="adminDrawerOpen = false"
         ></div>
 
@@ -304,7 +305,7 @@
             x-transition:leave="ease-in duration-150"
             x-transition:leave-start="translate-x-0"
             x-transition:leave-end="-translate-x-full"
-            class="fixed inset-y-0 left-0 w-full max-w-xs bg-admin-sidebar text-gray-200 p-6 shadow-xl flex flex-col justify-between"
+            class="fixed inset-y-0 left-0 w-full max-w-xs bg-admin-sidebar text-gray-200 p-6 shadow-xl flex flex-col justify-between overflow-y-auto gap-6"
             @keydown.escape.window="adminDrawerOpen = false"
         >
             <div>
@@ -321,20 +322,33 @@
                 </div>
 
                 <nav class="mt-6 flex flex-col space-y-2 font-ui text-xl">
-                    <a href="{{ url('/dashboard') }}" class="px-3 py-2.5 rounded-lg min-h-[44px] flex items-center {{ request()->is('dashboard') ? 'bg-accent-dark text-white font-bold' : 'text-gray-300 hover:bg-gray-800' }}">Dashboard</a>
-                    <a href="{{ url('/admin/articles') }}" class="px-3 py-2.5 rounded-lg min-h-[44px] flex items-center {{ request()->is('admin/articles*') ? 'bg-accent-dark text-white font-bold' : 'text-gray-300 hover:bg-gray-800' }}">Articles</a>
-                    <a href="{{ url('/admin/categories') }}" class="px-3 py-2.5 rounded-lg min-h-[44px] flex items-center {{ request()->is('admin/categories*') ? 'bg-accent-dark text-white font-bold' : 'text-gray-300 hover:bg-gray-800' }}">Categories</a>
-                    <a href="{{ url('/admin/media') }}" class="px-3 py-2.5 rounded-lg min-h-[44px] flex items-center {{ request()->is('admin/media*') ? 'bg-accent-dark text-white font-bold' : 'text-gray-300 hover:bg-gray-800' }}">Media</a>
-                    <a href="{{ url('/admin/settings') }}" class="px-3 py-2.5 rounded-lg min-h-[44px] flex items-center {{ request()->is('admin/settings*') ? 'bg-accent-dark text-white font-bold' : 'text-gray-300 hover:bg-gray-800' }}">Settings</a>
-                    <a href="{{ url('/profile') }}" class="px-3 py-2.5 rounded-lg min-h-[44px] flex items-center {{ request()->is('profile*') ? 'bg-accent-dark text-white font-bold' : 'text-gray-300 hover:bg-gray-800' }}">Profile</a>
+                    <a href="{{ url('/dashboard') }}" class="px-3 py-2.5 rounded-lg min-h-[44px] flex items-center {{ request()->is('dashboard') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">Dashboard</a>
+                    <a href="{{ url('/admin/articles') }}" class="px-3 py-2.5 rounded-lg min-h-[44px] flex items-center {{ request()->is('admin/articles*') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">Articles</a>
+                    <a href="{{ url('/admin/categories') }}" class="px-3 py-2.5 rounded-lg min-h-[44px] flex items-center {{ request()->is('admin/categories*') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">Categories</a>
+                    <a href="{{ url('/admin/media') }}" class="px-3 py-2.5 rounded-lg min-h-[44px] flex items-center {{ request()->is('admin/media*') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">Media</a>
+                    <a href="{{ url('/admin/settings') }}" class="px-3 py-2.5 rounded-lg min-h-[44px] flex items-center {{ request()->is('admin/settings*') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">Settings</a>
                 </nav>
             </div>
 
-            <div class="pt-6 border-t border-gray-800">
+            <div class="pt-4 border-t border-gray-800 space-y-2 font-ui">
+                <div class="flex items-center space-x-3 px-2 py-2">
+                    <div class="w-9 h-9 rounded-full bg-accent/20 border border-accent/40 text-accent font-bold flex items-center justify-center shrink-0 text-base">
+                        {{ strtoupper(substr(Auth::user()->name ?? 'D', 0, 1)) }}
+                    </div>
+                    <div class="min-w-0">
+                        <p class="font-bold text-white text-base truncate">{{ Auth::user()->name ?? 'Dapit' }}</p>
+                        <p class="text-xs text-gray-400 truncate">{{ Auth::user()->email ?? 'admin@npblog.local' }}</p>
+                    </div>
+                </div>
+
+                <a href="{{ url('/profile') }}" class="px-3 py-2.5 rounded-lg min-h-[44px] flex items-center text-base {{ request()->is('profile*') ? 'bg-accent-dark text-on-accent font-bold' : 'text-gray-300 hover:bg-gray-800 hover:text-white' }}">
+                    Profile Setting
+                </a>
+
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="w-full text-left font-ui text-lg text-danger py-2 min-h-[44px] flex items-center">
-                        Logout
+                    <button type="submit" class="w-full text-left font-ui text-base text-red-400 hover:text-red-300 hover:bg-red-950/30 px-3 py-2.5 rounded-lg min-h-[44px] flex items-center transition-colors">
+                        Keluar (Logout)
                     </button>
                 </form>
             </div>

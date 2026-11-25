@@ -146,14 +146,15 @@
             csrfToken: '{{ csrf_token() }}'
         })"
         x-init="updateMetrics()"
+        x-effect="document.body.classList.toggle('overflow-hidden', isFullscreen)"
     >
         <!-- Header -->
-        <div class="flex items-center justify-between pb-4 border-b border-border">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border">
             <div>
                 <h1 class="font-heading text-4xl font-bold text-ink">Tulis Artikel Baru</h1>
                 <p class="font-ui text-base text-text-secondary">Buat artikel baru dengan editor Markdown.</p>
             </div>
-            <a href="{{ route('admin.articles.index') }}" class="font-ui text-sm text-text-secondary hover:text-ink">
+            <a href="{{ route('admin.articles.index') }}" class="font-ui text-sm text-text-secondary hover:text-ink min-h-[44px] inline-flex items-center self-start sm:self-auto">
                 &larr; Kembali ke Daftar Artikel
             </a>
         </div>
@@ -222,7 +223,7 @@
                         <div
                             x-show="isFullscreen"
                             x-cloak
-                            class="fixed inset-0 bg-ink/75 backdrop-blur-xs z-40 transition-opacity"
+                            class="fixed inset-0 bg-ink/75 backdrop-blur-sm z-40 transition-opacity"
                             @click="isFullscreen = false"
                         ></div>
 
@@ -260,13 +261,13 @@
                                 </div>
 
                                 <!-- Minimalist Markdown Toolbar (Visible in Edit mode) -->
-                                <div class="flex items-center space-x-1 font-mono text-sm">
-                                    <div x-show="tab === 'edit'" class="flex items-center space-x-1">
+                                <div class="flex flex-wrap items-center gap-1 font-mono text-sm">
+                                    <div x-show="tab === 'edit'" class="flex flex-wrap items-center gap-1">
                                         <button
                                             type="button"
                                             @click="insertToolbar('**', '**', 'teks tebal')"
                                             title="Tebal (Bold)"
-                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[32px] min-w-[32px]"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[38px] min-w-[36px]"
                                         >
                                             B
                                         </button>
@@ -274,7 +275,7 @@
                                             type="button"
                                             @click="insertToolbar('*', '*', 'teks miring')"
                                             title="Miring (Italic)"
-                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface italic min-h-[32px] min-w-[32px]"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface italic min-h-[38px] min-w-[36px]"
                                         >
                                             I
                                         </button>
@@ -282,7 +283,7 @@
                                             type="button"
                                             @click="insertHeading(1)"
                                             title="Heading 1"
-                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[32px]"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[38px] min-w-[36px]"
                                         >
                                             H1
                                         </button>
@@ -290,7 +291,7 @@
                                             type="button"
                                             @click="insertHeading(2)"
                                             title="Heading 2"
-                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[32px]"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[38px] min-w-[36px]"
                                         >
                                             H2
                                         </button>
@@ -298,7 +299,7 @@
                                             type="button"
                                             @click="insertHeading(3)"
                                             title="Heading 3"
-                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[32px]"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface font-bold min-h-[38px] min-w-[36px]"
                                         >
                                             H3
                                         </button>
@@ -306,7 +307,7 @@
                                             type="button"
                                             @click="insertLink()"
                                             title="Tautan (Link) [Teks](URL)"
-                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px]"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[38px]"
                                         >
                                             Link
                                         </button>
@@ -314,7 +315,7 @@
                                             type="button"
                                             @click="insertCode()"
                                             title="Kode (Inline / Block)"
-                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px]"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[38px]"
                                         >
                                             &lt;/&gt;
                                         </button>
@@ -322,7 +323,7 @@
                                             type="button"
                                             @click="insertToolbar('\n> ', '\n', 'Kutipan...')"
                                             title="Kutipan (Quote)"
-                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px]"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[38px] min-w-[36px]"
                                         >
                                             &ldquo;
                                         </button>
@@ -330,21 +331,21 @@
                                             type="button"
                                             @click="insertToolbar('\n- ', '\n', 'Item daftar')"
                                             title="Daftar (List)"
-                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px]"
+                                            class="px-2 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[38px]"
                                         >
                                             &bull; List
                                         </button>
                                     </div>
 
                                     <!-- Separator before Fullscreen -->
-                                    <span class="w-px h-5 bg-border mx-1"></span>
+                                    <span class="hidden sm:inline-block w-px h-5 bg-border mx-1"></span>
 
                                     <!-- Fullscreen / Expand Button -->
                                     <button
                                         type="button"
                                         @click="toggleFullscreen()"
                                         :title="isFullscreen ? 'Perkecil Editor (Esc)' : 'Perbesar Layar Penuh (Fullscreen)'"
-                                        class="px-2.5 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[32px] flex items-center space-x-1.5 transition-colors"
+                                        class="px-2.5 py-1 rounded border border-border hover:border-ink hover:bg-surface min-h-[38px] flex items-center space-x-1.5 transition-colors"
                                         :class="isFullscreen ? 'bg-accent-dark text-on-accent font-bold' : 'text-text hover:text-ink'"
                                         aria-label="Perbesar layar penuh"
                                     >
@@ -408,7 +409,7 @@
                             id="excerpt"
                             name="excerpt"
                             rows="2"
-                            class="sketch-border sketch-radius-a bg-surface text-text font-body p-3 w-full"
+                            class="sketch-border sketch-radius-a bg-surface text-text font-body p-3 w-full focus:border-ink focus:ring-0"
                             placeholder="Ringkasan singkat tulisan untuk kartu artikel dan SEO..."
                         >{{ old('excerpt') }}</textarea>
                         <x-input-error :messages="$errors->get('excerpt')" class="mt-1" />
@@ -438,7 +439,7 @@
                                 id="meta_description"
                                 name="meta_description"
                                 rows="2"
-                                class="sketch-border sketch-radius-a bg-surface text-text font-body text-sm p-3 w-full"
+                                class="sketch-border sketch-radius-a bg-surface text-text font-body text-sm p-3 w-full focus:border-ink focus:ring-0"
                                 placeholder="Deskripsi ringkas yang tampil di hasil pencarian..."
                             >{{ old('meta_description') }}</textarea>
                             <x-input-error :messages="$errors->get('meta_description')" class="mt-1" />
@@ -457,7 +458,7 @@
                             <select
                                 id="status"
                                 name="status"
-                                class="sketch-border sketch-radius-a bg-surface text-text font-ui text-sm px-3 py-2 min-h-[44px] w-full"
+                                class="sketch-border sketch-radius-a bg-surface text-text font-ui text-sm px-3 py-2 min-h-[44px] w-full focus:border-ink focus:ring-0"
                             >
                                 <option value="draft" {{ old('status', 'draft') === 'draft' ? 'selected' : '' }}>Draf (Draft)</option>
                                 <option value="published" {{ old('status') === 'published' ? 'selected' : '' }}>Terbitkan Sekarang (Published)</option>
@@ -473,7 +474,7 @@
                                 name="published_at"
                                 type="datetime-local"
                                 value="{{ old('published_at') }}"
-                                class="sketch-border sketch-radius-a bg-surface text-text font-body text-sm px-3 py-2 min-h-[44px] w-full"
+                                class="sketch-border sketch-radius-a bg-surface text-text font-body text-sm px-3 py-2 min-h-[44px] w-full focus:border-ink focus:ring-0"
                             />
                             <p class="font-ui text-xs text-text-secondary mt-1">Kosongkan untuk menggunakan waktu saat ini bila berstatus terbit.</p>
                             <x-input-error :messages="$errors->get('published_at')" class="mt-1" />
@@ -485,7 +486,7 @@
                             <select
                                 id="category_id"
                                 name="category_id"
-                                class="sketch-border sketch-radius-a bg-surface text-text font-ui text-sm px-3 py-2 min-h-[44px] w-full"
+                                class="sketch-border sketch-radius-a bg-surface text-text font-ui text-sm px-3 py-2 min-h-[44px] w-full focus:border-ink focus:ring-0"
                             >
                                 <option value="">-- Pilih Kategori --</option>
                                 @foreach($categories as $cat)
@@ -540,7 +541,7 @@
                                 id="featured_image"
                                 name="featured_image"
                                 accept="image/jpeg,image/png,image/webp"
-                                class="w-full text-xs font-ui text-text file:mr-3 file:py-2 file:px-3 file:rounded file:border-2 file:border-ink file:text-xs file:font-bold file:bg-bg file:cursor-pointer"
+                                class="w-full text-xs font-ui text-text file:mr-3 file:py-2 file:px-3 file:rounded file:border-2 file:border-ink file:text-xs file:font-bold file:text-ink file:bg-bg file:cursor-pointer"
                             />
                             <p class="font-ui text-xs text-text-secondary mt-1">
                                 JPEG, PNG, WebP maks 5 MB. Otomatis dikonversi ke WebP dan di-resize maks 1600px.

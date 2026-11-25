@@ -46,7 +46,7 @@
                             name="image"
                             accept="image/jpeg,image/png,image/webp"
                             required
-                            class="w-full text-xs font-ui text-text file:mr-3 file:py-2 file:px-3 file:rounded file:border-2 file:border-ink file:text-xs file:font-bold file:bg-bg file:cursor-pointer"
+                            class="w-full text-xs font-ui text-text file:mr-3 file:py-2 file:px-3 file:rounded file:border-2 file:border-ink file:text-xs file:font-bold file:text-ink file:bg-bg file:cursor-pointer"
                         />
                         <p class="font-ui text-xs text-text-secondary mt-1">JPEG, PNG, WebP maks 5 MB.</p>
                         <x-input-error :messages="$errors->get('image')" class="mt-1" />
@@ -130,7 +130,7 @@
                                 loading="lazy"
                             />
                             <div class="absolute top-2 right-2 flex space-x-1">
-                                <span class="px-2 py-0.5 bg-ink/80 text-white font-mono text-[10px] rounded">
+                                <span class="px-2 py-0.5 bg-ink/90 text-surface font-mono font-bold text-[10px] rounded">
                                     {{ $item->width }}x{{ $item->height }}
                                 </span>
                             </div>
@@ -178,7 +178,7 @@
                                         <button
                                             type="button"
                                             @click="open = true"
-                                            class="font-ui text-xs font-bold text-accent-dark hover:underline"
+                                            class="font-ui text-xs font-bold text-accent-dark hover:underline min-h-[44px] inline-flex items-center px-1"
                                         >
                                             Edit Alt Text
                                         </button>
@@ -187,7 +187,7 @@
                                         <div
                                             x-show="open"
                                             x-cloak
-                                            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-xs"
+                                            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm"
                                         >
                                             <div
                                                 @click.away="open = false"
@@ -213,7 +213,7 @@
                                                         <button
                                                             type="button"
                                                             @click="open = false"
-                                                            class="px-3 py-1.5 font-ui text-sm text-text-secondary hover:text-ink"
+                                                            class="px-3 py-1.5 font-ui text-sm text-text-secondary hover:text-ink min-h-[44px]"
                                                         >
                                                             Batal
                                                         </button>
@@ -234,7 +234,7 @@
                                     >
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="font-ui text-xs font-bold text-danger hover:underline">
+                                        <button type="submit" class="font-ui text-xs font-bold text-danger hover:underline min-h-[44px] inline-flex items-center px-2">
                                             Hapus
                                         </button>
                                     </form>

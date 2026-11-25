@@ -61,7 +61,7 @@
                 @if($recentDrafts->isNotEmpty())
                     <div class="divide-y divide-border">
                         @foreach($recentDrafts as $draft)
-                            <div class="py-3.5 flex items-center justify-between gap-4">
+                            <div class="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                                 <div class="min-w-0 flex-1">
                                     <h3 class="font-ui text-base font-bold text-ink truncate hover:text-accent-dark">
                                         <a href="{{ route('admin.articles.edit', $draft->id) }}">{{ $draft->title }}</a>
@@ -73,7 +73,7 @@
                                         @endif
                                     </p>
                                 </div>
-                                <a href="{{ route('admin.articles.edit', $draft->id) }}" class="font-ui text-sm font-bold text-accent-dark hover:underline whitespace-nowrap px-3 py-1.5 border border-ink rounded bg-bg">
+                                <a href="{{ route('admin.articles.edit', $draft->id) }}" class="font-ui text-sm font-bold text-accent-dark hover:underline whitespace-nowrap px-3 py-2 border border-ink rounded bg-bg min-h-[44px] inline-flex items-center justify-center self-start sm:self-auto">
                                     Lanjutkan Menulis
                                 </a>
                             </div>
@@ -111,7 +111,7 @@
                                         @endif
                                     </p>
                                 </div>
-                                <a href="{{ route('articles.show', $pub->slug) }}" target="_blank" class="font-ui text-xs text-text-secondary hover:text-ink whitespace-nowrap p-1.5" title="Lihat di situs">
+                                <a href="{{ route('articles.show', $pub->slug) }}" target="_blank" class="font-ui text-xs text-text-secondary hover:text-ink whitespace-nowrap p-2 min-h-[44px] min-w-[44px] inline-flex items-center justify-center" title="Lihat di situs" aria-label="Lihat artikel di situs">
                                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                                         <polyline points="15 3 21 3 21 9"></polyline>

@@ -8,6 +8,7 @@
 
 <div
     x-data="{ show: false, actionUrl: '', method: 'POST' }"
+    x-effect="document.body.classList.toggle('overflow-hidden', show)"
     @open-confirm-modal.window="
         if ($event.detail.id === '{{ $id }}') {
             show = true;
@@ -32,7 +33,7 @@
         x-transition:leave="ease-in duration-150"
         x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
-        class="fixed inset-0 bg-ink/50 backdrop-blur-xs"
+        class="fixed inset-0 bg-ink/50 backdrop-blur-sm"
         @click="show = false"
     ></div>
 

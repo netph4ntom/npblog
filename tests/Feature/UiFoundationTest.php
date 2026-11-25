@@ -2,6 +2,7 @@
 
 use App\Models\Article;
 use App\Models\Category;
+use App\Models\Media;
 use App\Models\User;
 use Carbon\Carbon;
 
@@ -114,5 +115,61 @@ test('pagination uses theme tokens and hand-drawn styling without hardcoded gray
     $html = (string) $paginator->links();
 
     expect($html)->toContain('border-ink', 'bg-surface', 'bg-accent-dark', 'text-on-accent')
-        ->and($html)->not->toContain('dark:bg-gray-800', 'dark:bg-gray-700', 'dark:border-gray-600');
+        ->and($html)->not->toContain('dark:bg-gray-800', 'dark:bg-gray-700', 'dark:border-gray-600')
+        ->and($html)->not->toContain('shadow-xs')
+        ->and($html)->toContain('min-h-[44px]', '1 / 2');
+});
+
+test('toast, empty-state, chip, and danger button use mobile-safe and high-contrast tokens', function () {
+    $toast = (string) $this->blade('<x-toast />');
+    expect($toast)->toContain('left-4 right-4 sm:left-auto')
+        ->and($toast)->not->toContain('fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none max-w-sm w-full');
+
+    $empty = (string) $this->blade(
+        '<x-empty-state title="Kosong" description="Deskripsi khusus kosong" action-label="Reset Filter" action-url="/articles" />'
+    );
+    expect($empty)->toContain('Deskripsi khusus kosong', 'Reset Filter', 'href="/articles"')
+        ->and($empty)->not->toContain('description="', 'action-label="');
+
+    $chip = (string) $this->blade('<x-chip variant="accent">Tech</x-chip>');
+    expect($chip)->toContain('bg-accent text-on-accent')
+        ->and($chip)->not->toContain('variant="accent"');
+
+    $dangerBtn = (string) $this->blade('<x-button variant="danger">Hapus</x-button>');
+    expect($dangerBtn)->toContain('bg-danger text-on-accent')
+        ->and($dangerBtn)->not->toContain('text-white');
+});
+
+test('mobile drawers, admin media badge, editor toolbar, and login form maintain mobile ergonomics and dark mode contrast', function () {
+    $publicHome = $this->get('/');
+    $publicHome->assertOk()
+        ->assertSee('overflow-y-auto', false)
+        ->assertSee('backdrop-blur-sm', false)
+        ->assertDontSee('backdrop-blur-xs', false);
+
+    $loginRes = $this->get('/login');
+    $loginRes->assertOk()
+        ->assertDontSee('text-indigo-600', false)
+        ->assertDontSee('dark:bg-gray-900', false);
+
+    $user = User::factory()->create();
+
+    $dashRes = $this->actingAs($user)->get('/dashboard');
+    $dashRes->assertOk()
+        ->assertSee('overflow-y-auto', false)
+        ->assertDontSee('backdrop-blur-xs', false)
+        ->assertDontSee('bg-accent-dark text-white', false);
+
+    $editorRes = $this->actingAs($user)->get('/admin/articles/create');
+    $editorRes->assertOk()
+        ->assertSee('flex flex-wrap items-center gap-1', false)
+        ->assertDontSee('backdrop-blur-xs', false);
+
+    $media = Media::factory()->create(['user_id' => $user->id]);
+    $mediaRes = $this->actingAs($user)->get('/admin/media');
+    $mediaRes->assertOk()
+        ->assertSee('bg-ink/90 text-surface', false)
+        ->assertDontSee('bg-ink/80 text-white', false)
+        ->assertDontSee('backdrop-blur-xs', false);
+    expect($media->id)->toBeInt();
 });

@@ -173,6 +173,7 @@
 /* Code block wrapper with hand-drawn styling */
 .code-block-container {
     margin: 1.5rem 0;
+    max-width: 100%;
     border: 2px solid var(--ink);
     border-radius: var(--radius-sketch-b);
     overflow: hidden;
@@ -248,6 +249,10 @@ pre.code-block {
 .hljs-variable, .hljs-template-variable { color: var(--text); }
 
 /* Article typography styles */
+.article-body {
+    overflow-wrap: anywhere;
+}
+
 .article-body h1 {
     font-family: 'Caveat', cursive;
     font-size: 2.75rem;
@@ -374,6 +379,14 @@ pre.code-block {
     font-family: 'Patrick Hand', sans-serif;
     font-size: 1.0625rem;
     font-weight: 600;
+}
+
+@media (max-width: 767px) {
+    .article-body table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
 }
 
 .heading-permalink {

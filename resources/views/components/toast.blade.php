@@ -16,7 +16,7 @@
         @if(session('error')) add('{{ session('error') }}', 'error'); @endif
         @if(session('status')) add('{{ session('status') }}', 'info'); @endif
     "
-    class="fixed bottom-4 right-4 z-50 flex flex-col space-y-2 pointer-events-none max-w-sm w-full"
+    class="fixed bottom-4 left-4 right-4 sm:left-auto z-50 flex flex-col space-y-2 pointer-events-none sm:max-w-sm sm:w-full"
     role="status"
     aria-live="polite"
 >

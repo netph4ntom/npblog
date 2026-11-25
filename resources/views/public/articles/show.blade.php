@@ -1,8 +1,8 @@
 <x-public-layout :article="$article">
     <div class="max-w-[740px] mx-auto py-8 sm:py-12 space-y-8">
         <!-- Breadcrumb / Back Link -->
-        <div class="flex items-center justify-between text-sm font-ui">
-            <a href="{{ route('articles.index') }}" class="inline-flex items-center text-text-secondary hover:text-accent-dark">
+        <div class="flex flex-wrap items-center justify-between gap-2 text-sm font-ui">
+            <a href="{{ route('articles.index') }}" class="inline-flex items-center text-text-secondary hover:text-accent-dark min-h-[44px]">
                 <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
@@ -81,7 +81,7 @@
             $authorFooterBio = \App\Models\Setting::getString('author_bio', 'Penulis di NPblog. Berbagi catatan teknis, rekayasa kode, dan arsitektur web.');
         @endphp
         <div class="pt-6">
-            <x-sketch-box variant="a" class="p-6 bg-surface flex items-center gap-5">
+            <x-sketch-box variant="a" class="p-6 bg-surface flex flex-col sm:flex-row items-center text-center sm:text-left gap-4 sm:gap-5">
                 @if($authorProfileImage !== '')
                     <img
                         src="{{ $authorProfileImage }}"

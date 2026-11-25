@@ -92,5 +92,11 @@ test('css stylesheet defines prefers-reduced-motion and prefers-contrast rules',
         ->and($cssContent)->toContain('@media (prefers-contrast: more)')
         ->and($cssContent)->toContain(':focus-visible')
         ->and($cssContent)->toContain('--ink')
-        ->and($cssContent)->toContain('--bg');
+        ->and($cssContent)->toContain('--bg')
+        ->and($cssContent)->toContain('overflow-wrap: anywhere')
+        ->and($cssContent)->toContain('@media (max-width: 767px)');
+
+    $jsContent = file_get_contents(resource_path('js/app.js'));
+    expect($jsContent)->toContain('isSecureContext')
+        ->and($jsContent)->toContain('execCommand');
 });

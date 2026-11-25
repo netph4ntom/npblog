@@ -98,7 +98,7 @@
     <!-- Scripts & Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="preload bg-bg text-text min-h-screen flex flex-col paper-texture antialiased selection:bg-accent/30" x-data="{ mobileMenuOpen: false }">
+<body class="preload bg-bg text-text min-h-screen flex flex-col paper-texture antialiased selection:bg-accent/30" x-data="{ mobileMenuOpen: false }" x-effect="document.body.classList.toggle('overflow-hidden', mobileMenuOpen)">
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             requestAnimationFrame(() => {
@@ -118,14 +118,14 @@
             ? 'bg-bg/95 backdrop-blur-md border-border'
             : 'bg-transparent border-transparent'"
     >
-        <div class="max-w-container mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div class="max-w-container mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3">
             <!-- Brand Logo -->
-            <a href="{{ url('/') }}" class="group flex items-center space-x-2.5 text-decoration-none focus-visible:outline-none">
+            <a href="{{ url('/') }}" class="group flex items-center space-x-2.5 min-w-0 flex-1 md:flex-initial text-decoration-none focus-visible:outline-none">
                 @if($logoUrl !== '')
-                    <img src="{{ $logoUrl }}" alt="{{ $blogName }}" class="h-9 w-auto max-w-[140px] object-contain" />
+                    <img src="{{ $logoUrl }}" alt="{{ $blogName }}" class="h-8 sm:h-9 w-auto max-w-[100px] sm:max-w-[140px] object-contain shrink-0" />
                 @endif
-                <span class="font-heading text-4xl font-bold tracking-tight text-ink group-hover:text-accent-dark transition-colors">
-                    {{ $blogName }}<span class="text-accent text-5xl leading-none">.</span>
+                <span class="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-ink group-hover:text-accent-dark transition-colors truncate">
+                    {{ $blogName }}<span class="text-accent text-4xl sm:text-5xl leading-none">.</span>
                 </span>
             </a>
 
@@ -155,7 +155,7 @@
             </nav>
 
             <!-- Action Controls -->
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2 sm:space-x-3 shrink-0">
                 <x-theme-toggle />
 
                 <!-- Mobile Menu Button -->
@@ -194,7 +194,7 @@
             x-transition:leave="ease-in duration-150"
             x-transition:leave-start="opacity-100"
             x-transition:leave-end="opacity-0"
-            class="fixed inset-0 bg-ink/50 backdrop-blur-xs"
+            class="fixed inset-0 bg-ink/50 backdrop-blur-sm"
             @click="mobileMenuOpen = false"
         ></div>
 
@@ -207,7 +207,7 @@
             x-transition:leave="ease-in duration-150"
             x-transition:leave-start="translate-x-0"
             x-transition:leave-end="translate-x-full"
-            class="fixed inset-y-0 right-0 w-full max-w-xs bg-surface p-6 shadow-xl border-l-2 border-ink flex flex-col justify-between"
+            class="fixed inset-y-0 right-0 w-full max-w-xs bg-surface p-6 shadow-xl border-l-2 border-ink flex flex-col justify-between overflow-y-auto gap-6"
             @keydown.escape.window="mobileMenuOpen = false"
         >
             <div>
