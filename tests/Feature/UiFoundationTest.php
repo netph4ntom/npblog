@@ -114,12 +114,17 @@ test('pagination uses theme tokens and hand-drawn styling without hardcoded gray
     ]);
 
     $paginator = Article::paginate(1);
-    $html = (string) $paginator->links();
 
-    expect($html)->toContain('border-ink', 'bg-surface', 'bg-accent-dark', 'text-on-accent')
-        ->and($html)->not->toContain('dark:bg-gray-800', 'dark:bg-gray-700', 'dark:border-gray-600')
-        ->and($html)->not->toContain('shadow-xs')
-        ->and($html)->toContain('min-h-[44px]', '1 / 2');
+    foreach (['pagination::tailwind', 'pagination::default'] as $view) {
+        $html = (string) $paginator->links($view);
+
+        expect($html)->toContain('border-ink', 'bg-surface', 'bg-accent-dark', 'text-on-accent')
+            ->and($html)->not->toContain('dark:bg-gray-800', 'dark:bg-gray-700', 'dark:border-gray-600')
+            ->and($html)->not->toContain('shadow-xs')
+            ->and($html)->toContain('min-h-[44px]', '1 / 2', 'whitespace-nowrap')
+            ->and($html)->toMatch('/class="[^"]*sm:hidden[^"]*".*<!--\s*Mobile Navigation Buttons\s*-->|<!--\s*Mobile Navigation Buttons\s*-->\s*<div class="[^"]*sm:hidden[^"]*">/s')
+            ->and($html)->toMatch('/<!--\s*Pagination Controls\s*-->\s*<div class="hidden sm:block">/');
+    }
 });
 
 test('toast, empty-state, chip, and danger button use mobile-safe and high-contrast tokens', function () {
