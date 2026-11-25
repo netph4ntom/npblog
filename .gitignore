@@ -1,8 +1,36 @@
+# Environment & secrets
 .env
+.env.backup
+.env.production
 .env.*.local
-backups/
-node_modules/
+auth.json
+
+# Dependencies & build artifacts
 /vendor/
+node_modules/
 public/build/
+/public/hot
 /public/storage
+
+# Runtime, storage keys, logs & backups
 storage/*.key
+/storage/pail
+backups/
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Testing & static analysis caches
+/.phpunit.cache
+.phpunit.result.cache
+/.pest/
+/coverage/
+
+# IDE & OS metadata
+.DS_Store
+Thumbs.db
+/.idea/
+/.vscode/
+/.fleet/
+/.nova/
+/.zed/

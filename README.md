@@ -1,23 +1,173 @@
-# NPblog — Agent Environment Kit
+# NPblog
 
-Paket ini menyiapkan lingkungan agar AI coding agent (Claude Code, Cursor, dll.) bisa membangun NPblog dengan konsisten.
+Blog personal minimalis bergaya **hand-drawn** dengan CMS admin privat (single-admin), pipeline Markdown & media WebP, serta dukungan **Progressive Web App (PWA)**.
 
-## Isi
-- `AGENTS.md` / `CLAUDE.md` — aturan kerja, arsitektur, keamanan, desain, batasan agent
-- `docs/` — ringkasan PRD, design system hand-drawn, backlog bertahap (T01–T12)
-- `.claude/` — izin perintah (deny baca `.env`, deny `git push`) dan slash command `/task`, `/review`
-- `Dockerfile`, `compose.yaml`, `docker/` — PHP 8.3-FPM, Nginx, MySQL 8, Node 22 (profil dev)
-- `Makefile` — semua perintah lewat `make`
-- `.github/workflows/ci.yml` — Pint, Larastan, Pest, build aset
-- `scripts/backup.sh` — backup DB + storage
+---
 
-## Mulai
-1. Taruh seluruh isi folder ini di repo kosong `npblog/` lalu `git init`.
-2. `make bootstrap` (membuat skeleton Laravel 12 tanpa menimpa file kit), lalu `make up` dan `make migrate`.
-3. Buka agent di folder ini, lalu jalankan `/task T01` (Claude Code) atau minta: "Kerjakan T01 di docs/BACKLOG.md sesuai AGENTS.md".
-4. Lanjut task berikutnya satu per satu. Agent wajib menjalankan `make check` sebelum menyatakan selesai.
+## Fitur Utama
 
-## Catatan
-- Kit ini belum dijalankan di Docker sungguhan; YAML dan JSON sudah divalidasi sintaksnya. Bila `make bootstrap` gagal, periksa versi Docker Compose v2.
-- `Larastan` dan `Pest` dipasang di T01; CI akan gagal sampai T01 selesai.
-- Sesuaikan jawaban "Pertanyaan terbuka" di `docs/BACKLOG.md` sebelum agent menyentuh task yang bergantung padanya.
+### Publik & PWA
+- **Desain Hand-Drawn Minimalis**: Bingkai dan garis sketsa (`2px --ink`), sudut organis CSS (`sketch-radius-a/b/c`), dark/light mode tanpa flash (`localStorage` + preferensi sistem), serta font self-hosted (`Caveat`, `Patrick Hand`, `DM Sans`, `JetBrains Mono`).
+- **Progressive Web App (PWA)**:
+  - Web App Manifest dinamis di `/manifest.webmanifest` mengikuti pengaturan nama & deskripsi blog.
+  - Service Worker (`/sw.js`) dengan strategi *Network-First* untuk halaman publik, *Cache-First* untuk font/aset statis, *Stale-While-Revalidate* untuk media & manifest, serta *bypass* penuh untuk rute admin dan autentikasi.
+  - Halaman fallback offline (`/offline`) bertema hand-drawn dengan dukungan dark mode.
+- **Artikel & Navigasi**:
+  - Beranda (`/`), daftar artikel (`/articles`) dengan dropdown filter kategori, pencarian `FULLTEXT` MySQL (dan fallback `LIKE` untuk kata kunci pendek), serta paginasi responsif.
+  - Detail artikel (`/articles/{slug}`) dengan highlight sintaks kode + tombol salin, metadata waktu baca (`reading_time`), daftar tag, artikel terkait, dan redirect `301` otomatis dari tabel `redirects` saat slug artikel terbit berubah.
+  - Halaman About (`/about`), `sitemap.xml`, `robots.txt`, serta halaman error `404` & `500` bertema senada.
+
+### CMS Admin Privat
+- **Single-Admin & Tanpa Registrasi Publik**: Tidak ada rute `/register` maupun reset password publik. Pembuatan dan reset kata sandi admin dilakukan via CLI Artisan.
+- **Manajemen Artikel & Kategori**: Dashboard statistik & draf terbaru, editor Markdown dengan live *word count* & *reading time*, preview server-side (`POST /admin/articles/preview`), penjadwalan (`published_at`), serta CRUD kategori (mencegah penghapusan kategori yang masih terkait artikel).
+- **Pipeline Media WebP**: Validasi MIME server-side (`JPEG`, `PNG`, `WebP` maks `5 MB`), pembersihan metadata EXIF + auto-rotasi orientasi kamera, resize proporsional maks `1600px`, konversi ke `WebP`, pembuatan thumbnail `400px` dan `800px`, serta nama file acak.
+- **Pengaturan & Profil**: Kelola identitas blog, logo, favicon, hero banner, bio penulis, tautan sosial, konten halaman About, SEO default, serta pembaruan profil dan password admin.
+
+### Keamanan & Aksesibilitas
+- **Security Headers**: `Content-Security-Policy`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy`, `Permissions-Policy`, dan `Strict-Transport-Security` (HTTPS/produksi).
+- **Sanitasi Konten**: Markdown GFM dirender dan disanitasi allowlist ketat (`symfony/html-sanitizer`) sebelum disimpan ke `body_html`.
+- **Rate Limiting & Privasi**: Login ber-rate-limit dengan pesan error generik, halaman admin/login bertanda `noindex, nofollow`, tanpa cookie pelacak maupun analytics pihak ketiga.
+- **Aksesibilitas**: Skip link, target sentuh minimal `44px`, focus ring solid, atribut ARIA, serta dukungan `prefers-reduced-motion` dan `prefers-contrast: more`.
+
+---
+
+## Tech Stack
+
+- **Backend**: PHP 8.3, Laravel 12
+- **Database**: MySQL 8.0 (SQLite in-memory untuk environment testing)
+- **Frontend**: Blade Components, Alpine.js, Tailwind CSS, Vite 8
+- **Container**: Docker / Docker Compose (PHP 8.3-FPM, Nginx 1.27 Alpine, MySQL 8.0, Node 22 Alpine)
+- **Quality & Testing**: Laravel Pint, Larastan (`phpstan`), Pest, GitHub Actions CI
+
+---
+
+## Struktur Proyek
+
+```text
+├── app/
+│   ├── Console/Commands/       # Command Artisan admin (create-admin, reset-password)
+│   ├── Http/
+│   │   ├── Controllers/        # Dipisah ke Admin/, Public/, dan Auth/
+│   │   ├── Middleware/         # SecurityHeadersMiddleware
+│   │   └── Requests/           # Form Request validation
+│   ├── Models/                 # Article, Category, Tag, Media, Setting, Redirect, User
+│   ├── Policies/               # Otorisasi Admin
+│   └── Services/               # MarkdownRenderer, MediaProcessor, SlugGenerator, ReadingTime, ExcerptGenerator
+├── database/
+│   ├── factories/
+│   ├── migrations/
+│   └── seeders/                # Seeder data demo (1 admin, 4 kategori, 12 artikel)
+├── docker/                     # Konfigurasi Nginx & PHP container
+├── docs/                       # PRD summary, design system, backlog, & laporan audit
+├── public/
+│   ├── fonts/                  # Self-hosted woff2 fonts
+│   ├── icons/                  # Ikon PWA & PNG favicons
+│   └── sw.js                   # Service Worker PWA
+├── resources/
+│   ├── css/app.css             # CSS variables (light/dark) & typography styles
+│   ├── js/app.js               # Alpine.js, code copy button, & registrasi SW
+│   └── views/                  # Blade components, layouts, public & admin views
+├── routes/                     # web.php, auth.php, console.php
+├── scripts/backup.sh           # Skrip backup harian DB & public storage
+└── tests/                      # Pest Unit & Feature tests
+```
+
+---
+
+## Cara Menjalankan (Lokal dengan Docker / Podman)
+
+### Prasyarat
+- Docker + Docker Compose v2 (atau Podman + `podman-compose`)
+- GNU `make`
+
+### Langkah Setup
+1. **Clone repository & masuk ke direktori proyek**:
+   ```bash
+   git clone <url-repository> npblog
+   cd npblog
+   ```
+
+2. **Siapkan `.env` dari `.env.example`** (sesuaikan kredensial `DB_PASSWORD` dan `DB_ROOT_PASSWORD` bila diperlukan):
+   ```bash
+   make env
+   ```
+
+3. **Jalankan container & install dependency PHP/Node**:
+   ```bash
+   make up
+   make install
+   ```
+
+4. **Generate app key, buat symlink storage, dan build aset Vite**:
+   ```bash
+   docker compose exec app php artisan key:generate
+   docker compose exec app php artisan storage:link
+   docker compose --profile dev run --rm node sh -c "npm run build"
+   ```
+
+5. **Jalankan migrasi database**:
+   - Dengan data contoh (1 admin, 4 kategori, 12 artikel):
+     ```bash
+     make fresh
+     ```
+     > Akun bawaan seeder hanya untuk pengembangan lokal: `admin@npblog.local` / `password`. Segera ganti di produksi atau gunakan langkah tanpa seeder di bawah.
+   - Atau database bersih + buat akun admin sendiri:
+     ```bash
+     make migrate
+     make create-admin
+     ```
+
+6. **Akses aplikasi**:
+   - Publik: `http://localhost:8080`
+   - Login Admin: `http://localhost:8080/login`
+
+Untuk pengembangan frontend dengan Vite HMR:
+```bash
+make dev
+```
+
+---
+
+## Daftar Perintah Penting
+
+Semua perintah dijalankan melalui container menggunakan `Makefile`:
+
+| Perintah | Fungsi |
+|---|---|
+| `make up` | Salin `.env` (jika belum ada) dan jalankan container |
+| `make down` | Hentikan seluruh container |
+| `make install` | Jalankan `composer install` dan `npm install` |
+| `make dev` | Jalankan Vite dev server (`localhost:5173`) |
+| `make migrate` | Jalankan database migration |
+| `make fresh` | Jalankan `migrate:fresh --seed` |
+| `make create-admin` | Buat akun admin baru (`php artisan npblog:create-admin`) |
+| `make test` | Jalankan seluruh test suite Pest |
+| `make lint` | Format & cek style PHP dengan Laravel Pint |
+| `make stan` | Analisis statis PHP dengan Larastan |
+| `make check` | Jalankan `lint` + `stan` + `test` |
+| `make shell` | Masuk shell container `app` |
+| `make logs` | Lihat log seluruh service container |
+
+Reset kata sandi admin via CLI:
+```bash
+docker compose exec app php artisan npblog:reset-password
+```
+
+---
+
+## Pengujian & CI
+
+Jalankan pemeriksaan lengkap (Pint, Larastan, dan Pest) sebelum commit:
+```bash
+make check
+```
+
+Workflow CI di [`.github/workflows/ci.yml`](.github/workflows/ci.yml) berjalan otomatis pada `push` dan `pull_request` ke branch `main` dan `master` (MySQL 8.0, build Vite, `pint --test`, `phpstan`, dan `php artisan test`).
+
+---
+
+## Catatan Produksi & Backup
+
+- **Environment Produksi**: Set `APP_ENV=production`, `APP_DEBUG=false`, `SESSION_SECURE_COOKIE=true`, dan `APP_URL` ke domain HTTPS Anda di `.env`.
+- **PWA**: Service Worker dan fitur instalasi aplikasi (*Add to Home Screen*) memerlukan origin **HTTPS** (atau `localhost` saat lokal).
+- **Backup**: Jadwalkan [`scripts/backup.sh`](scripts/backup.sh) via cron untuk mencadangkan database MySQL dan folder `storage/app/public` ke `./backups/` (retensi 7 hari untuk DB dan 28 hari untuk storage).
