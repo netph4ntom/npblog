@@ -30,8 +30,12 @@ test('admin can view media library index', function () {
 
     $response->assertOk()
         ->assertSee('Galeri Media')
+        ->assertSee('Unggah Gambar Baru')
         ->assertSee('gambar-pertama.webp')
-        ->assertSee('Deskripsi pertama');
+        ->assertSee('Deskripsi pertama')
+        ->assertDontSee('Sanitasi & EXIF', false)
+        ->assertDontSee('Resize 1600px', false)
+        ->assertDontSee('WebP + Thumbnails', false);
 });
 
 test('admin can upload new image via media manager', function () {
