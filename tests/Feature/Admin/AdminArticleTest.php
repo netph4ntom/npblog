@@ -229,3 +229,32 @@ test('article creation fails when excerpt exceeds 300 characters', function () {
 
     $response->assertSessionHasErrors(['excerpt']);
 });
+
+test('edit article header places back link before public link and hides public link when scheduled', function () {
+    $published = Article::factory()->create([
+        'user_id' => $this->admin->id,
+        'category_id' => $this->category->id,
+        'title' => 'Artikel Publik Aktif',
+        'status' => 'published',
+        'published_at' => now()->subHour(),
+    ]);
+
+    $resPublished = $this->actingAs($this->admin)->get("/admin/articles/{$published->id}/edit");
+    $resPublished->assertOk()
+        ->assertSeeInOrder(['&larr; Kembali ke Daftar', 'Lihat Artikel Publik'], false)
+        ->assertSee('rel="noopener noreferrer"', false)
+        ->assertDontSee('Lihat Artikel Publik &rarr;', false);
+
+    $scheduled = Article::factory()->create([
+        'user_id' => $this->admin->id,
+        'category_id' => $this->category->id,
+        'title' => 'Artikel Terjadwal Depan',
+        'status' => 'published',
+        'published_at' => now()->addDay(),
+    ]);
+
+    $resScheduled = $this->actingAs($this->admin)->get("/admin/articles/{$scheduled->id}/edit");
+    $resScheduled->assertOk()
+        ->assertSee('&larr; Kembali ke Daftar', false)
+        ->assertDontSee('Lihat Artikel Publik', false);
+});

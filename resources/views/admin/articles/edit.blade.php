@@ -154,15 +154,25 @@
                 <h1 class="font-heading text-4xl font-bold text-ink">Edit Artikel</h1>
                 <p class="font-ui text-base text-text-secondary truncate">Perbarui artikel &ldquo;{{ $article->title }}&rdquo;.</p>
             </div>
-            <div class="flex flex-wrap items-center gap-4 shrink-0">
-                @if($article->status === 'published')
-                    <a href="{{ route('articles.show', $article->slug) }}" target="_blank" class="font-ui text-sm text-accent-dark hover:underline min-h-[44px] inline-flex items-center">
-                        Lihat Artikel Publik &rarr;
-                    </a>
-                @endif
+            <div class="flex flex-wrap items-center justify-between sm:justify-end gap-3 w-full sm:w-auto shrink-0">
                 <a href="{{ route('admin.articles.index') }}" class="font-ui text-sm text-text-secondary hover:text-ink min-h-[44px] inline-flex items-center">
                     &larr; Kembali ke Daftar
                 </a>
+                @if($article->isPublished())
+                    <x-button
+                        href="{{ route('articles.show', $article->slug) }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        variant="secondary"
+                        size="sm"
+                        class="min-h-[44px] gap-1.5"
+                    >
+                        <span>Lihat Artikel Publik</span>
+                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                        </svg>
+                    </x-button>
+                @endif
             </div>
         </div>
 
