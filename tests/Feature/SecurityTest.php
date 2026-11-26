@@ -46,6 +46,19 @@ test('secure HTTPS responses include HSTS header', function () {
     $response->assertHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
 });
 
+test('forwarded HTTPS headers from reverse proxy or cloudflare tunnel are trusted', function () {
+    $response = $this->withHeaders([
+        'X-Forwarded-For' => '203.0.113.10',
+        'X-Forwarded-Host' => 'blog.example.com',
+        'X-Forwarded-Port' => '443',
+        'X-Forwarded-Proto' => 'https',
+    ])->get('http://localhost/');
+
+    $response->assertOk()
+        ->assertHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+        ->assertSee('<link rel="canonical" href="https://blog.example.com">', false);
+});
+
 /*
 |--------------------------------------------------------------------------
 | 2. Authentication & Guest Access Control

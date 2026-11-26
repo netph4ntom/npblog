@@ -1,0 +1,250 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main, master]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-stb
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to STB via Cloudflare Tunnel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.conclusion == 'success')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Build production frontend assets
+        run: |
+          npm ci --ignore-scripts
+          npm run build
+
+      - name: Validate deployment configuration
+        env:
+          CF_SSH_HOSTNAME: ${{ secrets.CF_SSH_HOSTNAME }}
+          STB_SSH_USER: ${{ secrets.STB_SSH_USER }}
+          STB_SSH_KEY: ${{ secrets.STB_SSH_KEY }}
+          STB_APP_DIR: ${{ secrets.STB_APP_DIR }}
+        run: |
+          set -euo pipefail
+          for var in CF_SSH_HOSTNAME STB_SSH_USER STB_SSH_KEY STB_APP_DIR; do
+            if [ -z "${!var:-}" ]; then
+              echo "::error::Missing required GitHub secret: ${var}"
+              exit 1
+            fi
+          done
+
+      - name: Install cloudflared
+        run: |
+          sudo curl -fsSL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o /usr/local/bin/cloudflared
+          sudo chmod +x /usr/local/bin/cloudflared
+          cloudflared --version
+
+      - name: Configure SSH over Cloudflare Tunnel
+        env:
+          CF_SSH_HOSTNAME: ${{ secrets.CF_SSH_HOSTNAME }}
+          STB_SSH_USER: ${{ secrets.STB_SSH_USER }}
+          STB_SSH_KEY: ${{ secrets.STB_SSH_KEY }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${STB_SSH_KEY}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+
+          if [ -n "${CF_ACCESS_CLIENT_ID:-}" ] && [ -n "${CF_ACCESS_CLIENT_SECRET:-}" ]; then
+            cat > ~/.ssh/cf-proxy.sh <<EOF
+          #!/usr/bin/env sh
+          exec /usr/local/bin/cloudflared access ssh --hostname "\$1" --id '${CF_ACCESS_CLIENT_ID}' --secret '${CF_ACCESS_CLIENT_SECRET}'
+          EOF
+          else
+            cat > ~/.ssh/cf-proxy.sh <<'EOF'
+          #!/usr/bin/env sh
+          exec /usr/local/bin/cloudflared access ssh --hostname "$1"
+          EOF
+          fi
+          chmod 700 ~/.ssh/cf-proxy.sh
+
+          cat > ~/.ssh/config <<EOF
+          Host stb-tunnel
+            HostName ${CF_SSH_HOSTNAME}
+            User ${STB_SSH_USER}
+            IdentityFile ~/.ssh/id_deploy
+            IdentitiesOnly yes
+            StrictHostKeyChecking accept-new
+            ServerAliveInterval 15
+            ServerAliveCountMax 4
+            ProxyCommand ~/.ssh/cf-proxy.sh %h
+          EOF
+          chmod 600 ~/.ssh/config
+
+      - name: Package and upload release archive to STB
+        run: |
+          set -euo pipefail
+          tar \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.claude' \
+            --exclude='.env' \
+            --exclude='.env.backup' \
+            --exclude='.env.production' \
+            --exclude='.env.*.local' \
+            --exclude='node_modules' \
+            --exclude='vendor' \
+            --exclude='storage' \
+            --exclude='backups' \
+            --exclude='tests' \
+            --exclude='public/hot' \
+            --exclude='public/storage' \
+            -czf /tmp/npblog-release.tar.gz .
+          scp /tmp/npblog-release.tar.gz stb-tunnel:/tmp/npblog-release.tar.gz
+          rm -f /tmp/npblog-release.tar.gz
+
+      - name: Deploy release on STB with healthcheck and rollback
+        env:
+          STB_APP_DIR: ${{ secrets.STB_APP_DIR }}
+          DEPLOY_SHA: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          set -euo pipefail
+          SHORT_SHA="$(printf '%s' "${DEPLOY_SHA}" | cut -c1-7)"
+          RELEASE_NAME="$(date -u +%Y%m%d-%H%M%S)-${SHORT_SHA}"
+
+          ssh stb-tunnel bash -s -- "${STB_APP_DIR}" "${RELEASE_NAME}" "${DEPLOY_SHA}" <<'REMOTE_SCRIPT'
+          set -euo pipefail
+
+          APP_DIR="$1"
+          RELEASE_NAME="$2"
+          COMMIT_SHA="$3"
+
+          RELEASES_DIR="${APP_DIR}/releases"
+          SHARED_DIR="${APP_DIR}/shared"
+          NEW_RELEASE="${RELEASES_DIR}/${RELEASE_NAME}"
+          CURRENT_LINK="${APP_DIR}/current"
+          PROJECT_NAME="npblog"
+
+          mkdir -p "${RELEASES_DIR}" \
+            "${SHARED_DIR}/storage/app/private" \
+            "${SHARED_DIR}/storage/app/public" \
+            "${SHARED_DIR}/storage/framework/cache/data" \
+            "${SHARED_DIR}/storage/framework/sessions" \
+            "${SHARED_DIR}/storage/framework/testing" \
+            "${SHARED_DIR}/storage/framework/views" \
+            "${SHARED_DIR}/storage/logs" \
+            "${SHARED_DIR}/backups"
+
+          if [ ! -f "${SHARED_DIR}/.env" ]; then
+            echo "::error::Missing ${SHARED_DIR}/.env on STB. Create production .env before deploying."
+            rm -f /tmp/npblog-release.tar.gz
+            exit 1
+          fi
+
+          PREV_RELEASE=""
+          if [ -L "${CURRENT_LINK}" ]; then
+            PREV_RELEASE="$(readlink -f "${CURRENT_LINK}" || true)"
+          fi
+
+          mkdir -p "${NEW_RELEASE}"
+          tar -xzf /tmp/npblog-release.tar.gz -C "${NEW_RELEASE}"
+          rm -f /tmp/npblog-release.tar.gz
+
+          mkdir -p "${NEW_RELEASE}/storage"
+          cp "${SHARED_DIR}/.env" "${NEW_RELEASE}/.env"
+          chmod 600 "${NEW_RELEASE}/.env"
+
+          cat > "${NEW_RELEASE}/compose.override.yml" <<EOF
+          services:
+            app:
+              restart: unless-stopped
+              volumes:
+                - ${SHARED_DIR}/storage:/var/www/html/storage
+            web:
+              restart: unless-stopped
+              volumes:
+                - ${SHARED_DIR}/storage:/var/www/html/storage:ro
+            db:
+              restart: unless-stopped
+          EOF
+
+          COMPOSE_ARGS="-p ${PROJECT_NAME} -f ${NEW_RELEASE}/compose.yaml -f ${NEW_RELEASE}/compose.override.yml"
+
+          if [ -n "${PREV_RELEASE}" ] && [ -d "${PREV_RELEASE}/vendor" ] && [ -f "${PREV_RELEASE}/composer.lock" ] && cmp -s "${PREV_RELEASE}/composer.lock" "${NEW_RELEASE}/composer.lock"; then
+            cp -a "${PREV_RELEASE}/vendor" "${NEW_RELEASE}/vendor"
+          fi
+
+          rollback() {
+            echo "::warning::Deployment failed, rolling back to previous release..."
+            if [ -n "${PREV_RELEASE}" ] && [ -d "${PREV_RELEASE}" ]; then
+              ln -sfn "${PREV_RELEASE}" "${CURRENT_LINK}"
+              if [ -f "${PREV_RELEASE}/compose.override.yml" ]; then
+                docker compose -p "${PROJECT_NAME}" -f "${PREV_RELEASE}/compose.yaml" -f "${PREV_RELEASE}/compose.override.yml" up -d --remove-orphans || true
+              else
+                docker compose -p "${PROJECT_NAME}" -f "${PREV_RELEASE}/compose.yaml" up -d --remove-orphans || true
+              fi
+            fi
+            rm -rf "${NEW_RELEASE}"
+            exit 1
+          }
+          trap rollback ERR
+
+          docker compose ${COMPOSE_ARGS} build app
+          docker compose ${COMPOSE_ARGS} run --rm --no-deps app composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+          docker compose ${COMPOSE_ARGS} run --rm --no-deps -u root --entrypoint sh app -c "chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && chmod -R ug+rwX /var/www/html/storage /var/www/html/bootstrap/cache"
+
+          docker compose ${COMPOSE_ARGS} up -d --remove-orphans
+
+          docker compose ${COMPOSE_ARGS} exec -T app php artisan storage:link || true
+          docker compose ${COMPOSE_ARGS} exec -T app php artisan migrate --force
+          docker compose ${COMPOSE_ARGS} exec -T app php artisan optimize
+          chmod +x "${NEW_RELEASE}/scripts/backup.sh" || true
+
+          APP_PORT="$(grep -E '^APP_PORT=' "${SHARED_DIR}/.env" | tail -n1 | cut -d= -f2- | tr -d '\r' | tr -d '"' | tr -d "'")"
+          APP_PORT="${APP_PORT:-8080}"
+          HEALTH_URL="http://127.0.0.1:${APP_PORT}/up"
+
+          HEALTH_OK=0
+          for i in $(seq 1 15); do
+            if command -v curl >/dev/null 2>&1 && curl -fsS --max-time 3 "${HEALTH_URL}" >/dev/null 2>&1; then
+              HEALTH_OK=1
+              break
+            elif docker compose ${COMPOSE_ARGS} exec -T web wget -qO- http://127.0.0.1/up >/dev/null 2>&1; then
+              HEALTH_OK=1
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "${HEALTH_OK}" -ne 1 ]; then
+            echo "::error::Healthcheck failed at ${HEALTH_URL}"
+            docker compose ${COMPOSE_ARGS} logs --tail=50 app web || true
+            false
+          fi
+
+          ln -sfn "${NEW_RELEASE}" "${CURRENT_LINK}"
+          trap - ERR
+
+          ls -1dt "${RELEASES_DIR}"/* 2>/dev/null | tail -n +4 | xargs -r rm -rf
+          echo "Deployed ${RELEASE_NAME} (${COMMIT_SHA}) successfully!"
+          REMOTE_SCRIPT
+
