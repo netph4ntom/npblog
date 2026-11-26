@@ -83,7 +83,7 @@ Blog personal minimalis bergaya **hand-drawn** dengan CMS admin privat (single-a
 ### Langkah Setup
 1. **Clone repository & masuk ke direktori proyek**:
    ```bash
-   git clone <url-repository> npblog
+   git clone https://github.com/netph4ntom/npblog.git
    cd npblog
    ```
 
