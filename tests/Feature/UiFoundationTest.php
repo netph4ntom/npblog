@@ -169,7 +169,8 @@ test('mobile drawers, admin media badge, editor toolbar, and login form maintain
 
     $editorRes = $this->actingAs($user)->get('/admin/articles/create');
     $editorRes->assertOk()
-        ->assertSee('flex flex-wrap items-center gap-1', false)
+        ->assertSee('grid grid-cols-5 sm:flex sm:flex-wrap', false)
+        ->assertSee('col-span-2 sm:col-span-1', false)
         ->assertDontSee('backdrop-blur-xs', false);
 
     $media = Media::factory()->create(['user_id' => $user->id]);

@@ -256,5 +256,8 @@ test('edit article header places back link before public link and hides public l
     $resScheduled = $this->actingAs($this->admin)->get("/admin/articles/{$scheduled->id}/edit");
     $resScheduled->assertOk()
         ->assertSee('&larr; Kembali ke Daftar', false)
-        ->assertDontSee('Lihat Artikel Publik', false);
+        ->assertDontSee('Lihat Artikel Publik', false)
+        ->assertSee('grid grid-cols-5 sm:flex sm:flex-wrap', false)
+        ->assertSee('col-span-2 sm:col-span-1', false)
+        ->assertSeeInOrder(['Markdown Editor', 'Pratinjau Server', 'Perbesar'], false);
 });
