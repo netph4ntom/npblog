@@ -58,7 +58,7 @@ Blog personal minimalis bergaya **hand-drawn** dengan CMS admin privat (single-a
 │   ├── migrations/
 │   └── seeders/                # Seeder data demo (1 admin, 4 kategori, 12 artikel)
 ├── docker/                     # Konfigurasi Nginx & PHP container
-├── docs/                       # PRD summary, design system, backlog, & laporan audit
+├── lang/                       # Terjemahan aplikasi (id)
 ├── public/
 │   ├── fonts/                  # Self-hosted woff2 fonts
 │   ├── icons/                  # Ikon PWA & PNG favicons

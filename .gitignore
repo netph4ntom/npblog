@@ -26,6 +26,14 @@ yarn-error.log*
 /.pest/
 /coverage/
 
+# Development & AI agent docs/configs (local only)
+AGENTS.md
+CLAUDE.md
+/.claude/
+/docs/
+.cursor/
+.windsurf/
+
 # IDE & OS metadata
 .DS_Store
 Thumbs.db
